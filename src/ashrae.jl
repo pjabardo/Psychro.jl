@@ -1,0 +1,533 @@
+
+
+module Psychro
+
+
+const Ma = 28.9635 #/// Massa molecular equivalente do ar em kg/kmol, adotado de Giacomo
+const Mv = 18.01528 #/// Massa molecular da água em kg/kmol
+const R = 8314.41  #/// Constante universal dos gases J/(kmol.K)
+
+
+    
+
+
+Baa(Tk) = (0.349568e2 - 0.668772e4/Tk - 0.210141e7/(Tk*Tk) + 0.924746e8/(Tk*Tk*Tk)) / 1e3
+Blin(Tk) = 0.70e-8 - 0.147184e-8 * exp(1734.29/Tk) # Pa^(-1)
+Clin(Tk) = 0.104e-14 - 0.335297e-17*exp(3645.09/Tk) # Pa^(-2)
+dBlin(Tk) = 0.255260e-5/(Tk*Tk) * exp(1734.29/Tk)
+dClin(Tk) = 0.122219e-13/(Tk*Tk) * exp(3645.09/Tk)
+Bww(Tk) = R * Tk * Blin(Tk)
+Baw(Tk) = (0.32366097e2 - 0.141138e5/Tk - 0.1244535e7/(Tk*Tk) - 0.2348789e10/(Tk*Tk*Tk*Tk))/1e3
+dBaa(Tk) = (0.668772e4/(Tk*Tk) + 0.420282e7/(Tk*Tk*Tk) - 0.277424e9/(Tk*Tk*Tk*Tk))/1e3
+dBww(Tk) = R * (Tk * dBlin(Tk) + Blin(Tk))
+dBaw(Tk) = (0.141138e5/(Tk*Tk) + 0.248907e7/(Tk*Tk*Tk) + 0.93951568e10/pow(Tk, 5))
+Caaa(Tk) = (0.125975e4 - 0.190905e6/Tk + 0.632467e8/(Tk*Tk))/1e6
+Cwww(Tk) = R*Tk*R*Tk * (Clin(Tk) + Blin(Tk)^2)
+Caaw(Tk) = (0.482737e3 + 0.105678e6/Tk - 0.656394e8/(Tk*Tk) + 0.294442e11/(Tk*Tk*Tk) - 0.319317e13/(Tk*Tk*Tk*Tk)) / 1e6
+Caww(Tk) = -1e6* exp( -0.10728876e2 + 0.347802e4/Tk - 0.383383e6/(Tk*Tk)
+			 + 0.33406e8/(Tk*Tk*Tk))/1e6
+dCaaa(Tk) = (0.190905e6/(Tk*Tk) - 0.126493e9/(Tk*Tk*Tk)) / 1e6
+dCwww(Tk) = R*Tk*R*Tk * (dClin(Tk) + 2*Blin(Tk) * dBlin(Tk)) + (2*R*R*Tk) * (Clin(Tk) + Blin(Tk)^2)
+dCaaw(Tk) = (-0.105678e6/(Tk*Tk) + 1.312788e8/(Tk*Tk*Tk) - 8.83326e10/(Tk^4)) / 1e6
+dCaww(Tk) = (-0.347802e4/(Tk*Tk) + 2*0.383383e6/(Tk*Tk*Tk) - 3*0.33406e8/Tk^4) * Caww(Tk)
+
+function Bm(Tk, xv)
+    xa = 1 - xv
+    xa*xa*Baa(Tk) + 2*xa*xv*Baw(Tk) + xv*xv*Bww(Tk)
+end
+
+function Cm(Tk, xv)
+    xa = 1-xv
+    xa*xa*xa*Caaa(Tk) + 3*xa*xa*xv*Caaw(Tk) + 3*xa*xv*xv*Caww(Tk) + xv*xv*xv*Cwww(Tk)
+end
+
+function Pws_l(Tk)
+    g = [-0.58002206e4,
+         0.13914993e1,
+         -0.48640239e-1,
+         0.41764768e-4,
+         -0.14452093e-7,
+	 0.65459673e1]
+    exp(g[1]/Tk + g[2] + g[3]*Tk + g[4]*Tk*Tk + g[5]*Tk*Tk*Tk + g[6]* log(Tk))
+end
+
+function Pws_s(Tk)
+    m = [-0.56745359e4,
+         0.63925247e1,
+         -0.96778430e-2,
+         0.62215701e-6,
+         0.20747825e-8,
+         -0.94840240e-12,
+	 0.41635019e1]
+  
+  
+    exp(m[1]/Tk + m[2] + m[3]*Tk + m[4]*Tk*Tk + m[5]*Tk*Tk*Tk +  m[6]*Tk*Tk*Tk*Tk + m[7]* log(Tk))
+end
+
+
+function Pws(Tk)
+    if Tk < 273.15
+        Pws_s(Tk)
+    else
+        Pws_l(Tk)
+    end
+end
+   
+
+function dPws_s(Tk)
+    x1 = Pws_s(Tk)
+    x2 = 0.56745359e4/(Tk*Tk) + 0.41635019e1/Tk - 0.96778430e-2 + 0.12443140e-5*Tk + 0.62243475e-8 * Tk*Tk - 0.37936096e-11*Tk*Tk*Tk
+    
+    return x1*x2
+end
+
+function dPws_l(Tk)
+    x1 = Pws_l(Tk)
+    x2 = 0.58002206e4/(Tk*Tk)+0.65459673e1/Tk-0.48640239e-1 + 0.83529536e-4*Tk -0.43356279e-7 * Tk*Tk
+
+    x1*x2
+end
+
+function dPws(Tk)
+    if Tk < 273.15
+        dPws_s(Tk)
+    else
+        dPws_l(Tk)
+    end
+end
+  
+
+function Tws(P)
+
+    g = [2.127925e2,
+	 7.305398e0,
+	 1.969953e-1,
+	 1.103701e-2,
+	 1.849307e-3,
+	 5.145087e-6]
+    lnP = log(P)
+    T = g[1] + g[2]*lnP + g[3]*lnP*lnP + g[4]*lnP*lnP*lnP + g[5]*lnP*lnP*lnP*lnP + g[6] * P
+
+    NMAX = 100
+    EPS = 1e-8
+
+    for i = 0:NMAX
+        f = P - Pws(T)
+        df = -dPws(T)
+        dT = -f / df
+        T += dT
+
+        if abs(dT) < EPS
+            return T
+        end
+    end
+
+    return T
+end
+
+
+vM_(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
+
+v_v_(Tk) = vM_v_(Tk) / Mv
+r_v_(Tk) = 1/v_v_(Tk)
+
+function Z(Tk, P, xv)
+
+    xa = 1-xv
+    vmi = R*Tk/P
+    vm = vmi
+    b = Bm(Tk, xv)
+    c = Cm(Tk, xv)
+    NMAX = 100
+    EPS = 1e-8
+
+    for iter = 0:NMAX
+        vmn = R*Tk/P * (1 + b/vm + c/(vm*vm))
+        erro = abs(vmn-vm)
+        vm = vmn
+
+        if erro < EPS
+            return vm/vmi
+        end
+    end
+
+    vm/vmi
+end
+
+
+function e_factor(Tk, P)
+    f = 1.0
+    EPS = 1e-7
+    NMAX = 100
+    for iter = 1:NMAX
+        xas = (P-f*Pws(Tk)) / P
+        fnovo = exp(lnf(Tk,P,xas))
+
+        if abs(fnovo - 1.0) < EPS
+            if fnovo < 1
+                fnovo = 1.0
+            end
+            fnovo = 1.0
+        end
+
+        f = fnovo
+    end
+    if fnovo < 1.0
+        fnovo = 1.0
+    end
+    fnovo
+end
+
+
+
+function lnf(Tk, P, xas)
+
+    vc = v_f_(Tk) * Mv
+    kk = kappa_f(Tk)
+
+    if Tk < 273.15
+        k = 0.0
+    else
+        k = henryk(Tk)
+    end
+
+    RT = R*Tk
+    p = Pws(Tk)
+    t1 = vc/RT * ( (1 + kk*p)*(P-p) - 0.5*kk*(P*P - p*p) )
+    t2 = log(1.0 - k*xas*P) + (xas*xas*P/RT)*Baa(Tk) - (2*xas*xas*P/RT)*Baw(Tk)
+    t3 = -(P-p-xas*xas*P)/RT*Bww(Tk) + xas*xas*xas*P*P/(RT*RT) * Caaa(Tk)
+    t4 = 3*xas*xas*(1.0-2.0*xas)*P*P/(2*RT*RT) * Caaw(Tk) - (3*xas*xas*(1-xas)*P*P)/(RT*RT) * Baa(Tk)*Baw(Tk)
+    t7 = 6.0*xas*xas*(1-xas)^2*P*P/(RT*RT)*Bww(Tk)*Baw(Tk) - 3.0*xas^4*P*P/(2.0*RT*RT)*Baa(Tk)^2
+    t8 = -2.0*xas*xas*(1.0-xas)*(1.0-3.0*xas)*P*P/(RT*RT) * Baw(Tk)^2 - (p*p - (1.0+3.0*xas)*(1.0-xas)^3*P*P) / (2*RT*RT) * Bww(Tk)^2
+
+   return t1+t2+t3+t4+t5+t6+t7+t8
+   
+end
+
+function henryk_O2(Tk)
+
+    tau = 1000.0/Tk
+    alfa = -0.0005943
+    beta = -0.1470
+    gama = -0.05120
+    delta = -0.1076
+    eps = 0.8447
+    a2 = alfa;
+    a1 = gama*tau + delta
+    a0 = beta*tau*tau + eps*tau - 1.0
+
+    10^( (-a1-sqrt(a1*a1 - 4.0*a2*a0)) / (2.0*a2))
+end
+
+
+function henryk_N2(Tk)
+
+    tau = 1000.0/Tk
+    alfa = -0.1021
+    beta = -0.1482
+    gama = -0.019
+    delta = -0.03741
+    eps = 0.851
+    a2 = alfa;
+    a1 = gama*tau + delta
+    a0 = beta*tau*tau + eps*tau - 1.0
+
+    10^( (-a1-sqrt(a1*a1 - 4.0*a2*a0)) / (2.0*a2))
+end
+
+
+function henryk(Tk)
+
+    kO2 = henryk_O2(Tk)
+    kN2 = henryk_N2(Tk)
+    xO2 = 0.22
+    xN2 = 0.78
+
+    k = 1.0 / (xO2/kO2 + xN2/kN2)
+
+    1e-4/k * 1.0 /101325.0
+end
+
+
+function kappa_l(Tk)
+    Tc = Tk - 273.15
+
+    if Tc < 100.0
+        k = (50.88496 + 0.6163813*Tc + 1.459187e-3*Tc*Tc + 20.08438e-6*Tc*Tc*Tc -
+	     58.47727e-9*Tc^4 + 410.4110e-12 * Tc^5) / (1.0 + 19.67348e-3*Tc);
+    else
+        k =  (50.884917 + 0.62590623*Tc + 1.3848668e-3*Tc*Tc + 21.603427e-6*Tc*Tc*Tc -
+	      72.087667e-9*Tc^4 + 465.45054e-12 * Tc^5) / (1 + 19.859983e-3*Tc);
+    end
+
+    k*1e-11
+end
+
+
+kappa_s(Tk) = (8.875 + 0.0165*Tk)*1e-11
+
+kappa_f(Tk) = 
+    if Tk < 273.15
+        kappa_s(Tk)
+    else
+        kappa_l(Tk)
+    end
+
+
+
+abstract AbstractPsychro
+
+immutable Ashrae <: AbstractPsychro
+    Tmin::Float64
+    Tmax::Float64
+    Pmin::Float64
+    Pmax::Float64
+    xv::Float64
+    W::Float64
+    M::Float64
+end
+
+function Ashrae(xv)
+    w = Mv/Ma * xv/(1.0 - xv)
+    m = xv*Mv + (1.0-xv)*Ma
+
+    Ashrae(173.15, 473.15, 0.0, 5.0e6, xv, w, m)
+end
+
+Ashrae() = Ashrae(173.15, 473.15, 0.0, 5.0e6, 0.0, 0.0, Ma)
+
+
+function Ashrae(ch::Char, T, humidity, Patm)
+    a = Ashrae()
+    
+    if ch == 'X'
+        xv = humidity
+    elseif ch == 'W'
+        xv = humidity / (Mv/Ma + humidity)
+    elseif ch == 'R'
+        rel = humidity
+        xv = rel * e_factor(T, P) * Pws(T) / P
+    elseif ch == 'D'
+        D = humidity
+        xv = e_factor(D,P) * Pws(D) / P
+    elseif ch == 'B'
+
+        B = humidity
+        w = calc_W_from_B(T, B, P)
+        xv = w / (Mv/Ma + w)
+    else
+
+    end
+
+    return Ashrae(xv)
+    
+        
+        
+end
+
+
+function calc_W_from_B(T, B, P)
+
+    NMAX = 100
+    xsv = e_factor(B,P) * Pws(B) / P
+    w2 = Mv/Ma * xsv/(1-xsv)
+
+    EPS = 1e-8*w2
+    w = (h_a_(B) - h_a_(T) - w2*(h_f_(B) + h_v_(B))) / (h_v(T) - h_f_(B))
+    for iter = 1:NMAX
+        f = aux_WB(w, T, B, P)
+        df = (aux_WB(w+1e-5*w2, T, B, P) - f) / (1e-5*w2)
+        dw = -f/df
+        w = w + dw
+
+        if abs(dw) < EPS
+            return w
+        end
+
+    end
+
+    return w
+end
+
+function aux_WB(w, T, B, P)
+    xv1 = w / (Mv/Ma+w)
+    xv2 = e_factor(B, P) * Pws(B) / P
+    w2 = Mv / Ma * xv2 / (1.0-xv2)
+    (1.0+w)*h_(T,P,xv1) + (w2-w)*h_f_(B) - (1.0+w2)*h_(B,P,xv2)
+end
+
+
+    
+function vM_a_(Tk, P)
+    xa = 1.0
+    vmi = R*Tk/P
+    vm = vmi
+    b = Baa(Tk)
+    c = Caaa(Tk)
+    NMAX = 100
+    EPS = 1e-8
+    for iter = 1:NMAX
+        vmn = R*Tk/P * (1.0 + 1.0/vm*(b + c/vm))
+        erro = abs(vmn-vm)
+        vm = vmn
+
+        if erro < EPS
+            return vm
+        end
+    end
+    return vm
+end
+   
+v_a_(Tk, P) = vM_a_(Tk,P) / Ma
+r_a_(Tk, P) = 1.0 / v_a_(Tk,P)
+
+function h_a_(Tk, P)
+    b = [-0.79078691e4,
+         0.28709015e2,
+         0.26431805e-2,
+         -0.10405863e-4,
+         0.18660410e-7,
+	 -0.97843331e-11]
+
+    B = Baa(Tk)
+    C = Caaa(Tk)
+    dB = dBaa(Tk)
+    dC = dCaaa(Tk)
+  
+    Vm = vM_a_(Tk, P)
+
+    ha = 1000.0*(b[1] + b[2]*Tk + b[3]*Tk*Tk + b[4]*Tk*Tk*Tk +b[5]*Tk^4 + b[6]*Tk^5)
+  
+    ha = ha + R*Tk * ( (B - Tk*dB)/Vm + (C - 0.5*Tk*dC)/(Vm*Vm)  )
+    return ha/Ma;
+end
+
+
+function vM_v_(Tk)
+    P = Pws(Tk)
+    vmi = R*Tk/P
+    vm = vmi
+    b = Bww(Tk)
+    c = Cww(Tk)
+    NMAX = 200
+    EPS = 1e-9
+    for iter = 1:NMAX
+        vmn = R*Tk/P * (1.0 + 1.0/vm*(b + c/vm))
+        erro = abs(vmn - vm)
+        vm = vmn
+        if erro < EPS
+            return vm
+        end
+    end
+
+    return vm
+end
+    
+v_(Tk, P, xv) = vM_(Tk, P, xv) / ((1.0-xv)*Ma + xv*Mv)
+r_(Tk, P, xv) = 1.0 / v_(Tk, P, xv)
+
+function h_s_(Tk)
+    D = [-0.647595E3,
+         0.274292e0,
+         0.2910583e-2,
+         0.1083437e-5,
+	 0.107e-5]
+
+  return 1000.0 * (D[1] + D[2]*Tk + D[3]*Tk*Tk + D[4]*Tk*Tk*Tk + D[5]*Pws(Tk))
+end
+
+function h_l_(Tk)
+    beta0 = Tk * v_l_(273.15) * dPws(273.15)
+    beta = Tk * v_l_(Tk) * dPws(Tk) - beta0
+    L = [-0.11411380e4,
+         0.41930463e1,
+         -0.8134865e-4,
+         0.1451133e-6,
+         -0.1005230e-9,
+         -0.563473,
+	 -0.036]
+    
+    M = [-0.1141837121e4,
+	 0.4194325677e1,
+	 -0.6908894163e-4,
+	 0.105555302e-6,
+	 -0.7111382234e-10,
+	 0.6059e-6]
+
+    if Tk < 373.125
+        alfa = L[1] + L[2]*Tk + L[3]*Tk*Tk + L[4]*Tk*Tk*Tk + L[5]*Tk*Tk*Tk*Tk +
+        L[6] * 10^(L[7] * (Tk- 273.15))
+    elseif 373.125 < Tk <= 403.128
+        alfa = M[1] + M[2]*Tk + M[3]*Tk*Tk + M[4]*Tk*Tk*Tk + M[5]*Tk*Tk*Tk*Tk;
+    else
+        alfa = M[1] + M[2]*Tk + M[3]*Tk*Tk + M[4]*Tk*Tk*Tk +
+        M[5]*Tk*Tk*Tk*Tk - M[6]*(Tk - 403.128)^3.1
+    end
+
+    return 1000.0*alfa + beta
+end
+
+
+h_f_(Tk) =
+    if Tk < 273.16
+        h_s_(Tk)
+    else
+        h_l_(Tk)
+    end
+
+function h_v_(Tk)
+
+    xv = 1.0
+    xa = 0.0
+
+    P = Pws(Tk)
+    a =[0.63290874e1,
+        0.28709015e2,
+        0.26431805e-2,
+        -0.10405863e-4,
+        0.18660410e-7,
+	-0.9784331e-11]
+
+    d = [-0.5008e-2,
+         0.32491829e2,
+         0.65576345e-2,
+         -0.26442147e-4,
+         0.51751789e-7,
+	 -0.31541624e-10]
+
+    B = Bww(Tk)
+    C = Cwww(Tk) 
+
+    dB = dBww(Tk)
+    dC = dCwww(Tk)
+    
+    
+    hv = 35994.17
+    
+    termo2 = d[1] + d[2]*Tk + d[3]*Tk*Tk + d[4]*Tk*Tk*Tk +
+    d[5]*Tk^4 + d[6]*Tk^5 + hv
+    
+
+    # Cálculo do volume molar
+    Vm = vM_v_(Tk)
+    
+    termo3 = (B - Tk*dB)/Vm + (C - 0.5*Tk*dC)/(Vm*Vm)
+
+    hm =  termo2 * 1000.0 + R*Tk*termo3
+  
+    hm/Mv
+end
+
+    
+
+    
+        
+    
+
+    
+
+    
+
+end
+
+
