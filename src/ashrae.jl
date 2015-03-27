@@ -297,16 +297,21 @@ end
 Ashrae() = Ashrae(173.15, 473.15, 0.0, 5.0e6, 0.0, 0.0, Ma)
 
 
-function Ashrae(ch::Char, T, humidity, Patm)
+function Ashrae(ch::Char, T, humidity, P)
     a = Ashrae()
-    
+    ch = uppercase(ch)
     if ch == 'X'
         xv = humidity
+        xsv = e_factor(T, P) * Pws(T) / P
+        w = Mv/Ma * xv/(1.0 - xv)
     elseif ch == 'W'
-        xv = humidity / (Mv/Ma + humidity)
+        w = humidity
+        xv = w / (Mv/Ma + w)
+        xsv = e_factor(T,P) * Pws(T) / P
     elseif ch == 'R'
         rel = humidity
         xv = rel * e_factor(T, P) * Pws(T) / P
+        w = Mv/Ma * xv/(1.0 - xv)
     elseif ch == 'D'
         D = humidity
         xv = e_factor(D,P) * Pws(D) / P
@@ -315,7 +320,11 @@ function Ashrae(ch::Char, T, humidity, Patm)
         B = humidity
         w = calc_W_from_B(T, B, P)
         xv = w / (Mv/Ma + w)
-    else
+    else if ch=='D'
+        D = humidity
+
+        xv = e_factor(D,P) * Pws(D) / P
+        w = Mv/Ma * xv/(1.0 - xv)
 
     end
 
