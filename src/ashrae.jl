@@ -1,12 +1,11 @@
 
 
-module Psychro
 
 
 const Ma = 28.9635 #/// Massa molecular equivalente do ar em kg/kmol, adotado de Giacomo
 const Mv = 18.01528 #/// Massa molecular da água em kg/kmol
 const R = 8314.41  #/// Constante universal dos gases J/(kmol.K)
-
+const T0 = 273.15 #/// Frerezing point of water
 
     
 
@@ -42,35 +41,31 @@ function Cm(Tk, xv)
 end
 
 function Pws_l(Tk)
-    g = [-0.58002206e4,
-         0.13914993e1,
-         -0.48640239e-1,
-         0.41764768e-4,
-         -0.14452093e-7,
-	 0.65459673e1]
-    exp(g[1]/Tk + g[2] + g[3]*Tk + g[4]*Tk*Tk + g[5]*Tk*Tk*Tk + g[6]* log(Tk))
+    g = (-0.58002206e4, 0.13914993e1, -0.48640239e-1,  0.41764768e-4, -0.14452093e-7, 0.65459673e1)
+    
+    exp((g[1] + Tk*(g[2] + Tk*(g[3] + Tk*(g[4]+Tk*g[5]))))/Tk + g[6]*log(Tk))
+                    
 end
 
+
+
 function Pws_s(Tk)
-    m = [-0.56745359e4,
-         0.63925247e1,
-         -0.96778430e-2,
-         0.62215701e-6,
-         0.20747825e-8,
-         -0.94840240e-12,
-	 0.41635019e1]
+    m = (-0.56745359e4, 0.63925247e1, -0.96778430e-2, 0.62215701e-6,
+         0.20747825e-8, -0.94840240e-12, 0.41635019e1)
   
   
-    exp(m[1]/Tk + m[2] + m[3]*Tk + m[4]*Tk*Tk + m[5]*Tk*Tk*Tk +  m[6]*Tk*Tk*Tk*Tk + m[7]* log(Tk))
+    exp( (m[1] + Tk*(m[2] + Tk*(m[3] + Tk*(m[4] + Tk*(m[5] + Tk*m[6])))))/Tk + m[7] * log(Tk) )
 end
+
 
 
 function Pws(Tk)
-    if Tk < 273.15
+    if Tk < 273.14
         Pws_s(Tk)
     else
         Pws_l(Tk)
     end
+        
 end
    
 
@@ -99,17 +94,12 @@ end
 
 function Tws(P)
 
-    g = [2.127925e2,
-	 7.305398e0,
-	 1.969953e-1,
-	 1.103701e-2,
-	 1.849307e-3,
-	 5.145087e-6]
+    g = (2.127925e2, 7.305398e0, 1.969953e-1, 1.103701e-2, 1.849307e-3,	 5.145087e-6)
     lnP = log(P)
-    T = g[1] + g[2]*lnP + g[3]*lnP*lnP + g[4]*lnP*lnP*lnP + g[5]*lnP*lnP*lnP*lnP + g[6] * P
+    T = g[1] + lnP * (g[2] + lnP*(g[3] + lnP*(g[4] + lnP*g[5]))) + g[6] * P
 
     NMAX = 100
-    EPS = 1e-8
+    EPS = 1e-11
 
     for i = 0:NMAX
         f = P - Pws(T)
@@ -275,7 +265,7 @@ kappa_f(Tk) =
 
 
 
-abstract AbstractPsychro
+abstract type AbstractPsychro end
 
 immutable Ashrae <: AbstractPsychro
     Tmin::Float64
@@ -320,7 +310,7 @@ function Ashrae(ch::Char, T, humidity, P)
         B = humidity
         w = calc_W_from_B(T, B, P)
         xv = w / (Mv/Ma + w)
-    else if ch=='D'
+    elseif ch=='D'
         D = humidity
 
         xv = e_factor(D,P) * Pws(D) / P
@@ -536,7 +526,3 @@ end
     
 
     
-
-end
-
-
