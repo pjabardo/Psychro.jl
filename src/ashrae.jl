@@ -9,9 +9,15 @@ const T0 = 273.15 #/// Frerezing point of water
 
     
 
-"Virial coefficient of dry air [2] eq 10"
+"""
+Virial coefficient Bₐₐ of dry air eq 10 [2]
+
+Input: `Tk` Temperature in K
+Output: Virial coefficient
+"""
 Baa(Tk) = (0.349568e2 - 0.668772e4/Tk - 0.210141e7/(Tk*Tk) + 0.924746e8/(Tk*Tk*Tk)) / 1e3
 
+"Virial coefficient B' saturated vapor eq 15 [1]"
 Blin(Tk) = 0.70e-8 - 0.147184e-8 * exp(1734.29/Tk) # Pa^(-1)
 Clin(Tk) = 0.104e-14 - 0.335297e-17*exp(3645.09/Tk) # Pa^(-2)
 dBlin(Tk) = 0.255260e-5/(Tk*Tk) * exp(1734.29/Tk)
