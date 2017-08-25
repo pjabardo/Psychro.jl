@@ -494,6 +494,12 @@ function lnf(Tk, P, xas)
         k = henryk(Tk)
     end
 
+    baa = Baa(Tk)
+    bww = Bww(Tk)
+    baw = Baw(Tk)
+    caaa = Caaa(Tk)
+    
+
     RT = R*Tk
     p = Pws(Tk)
     t1 = vc/RT * ( (1 + kk*p)*(P-p) - 0.5*kk*(P*P - p*p) )
