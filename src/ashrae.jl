@@ -197,8 +197,7 @@ Cross virial coefficient Caaw of saturated vapor eq 17 [2]
  * `Tk` Temperature in K
  * Output: Caww in m^6/mol^2
 """
-Caww(Tk) = -1e-6 * exp( -0.10728876e2 + 1.0/Tk * (0.347802e4 1.0/Tk*(-0.383383e6 + 
-			                                             0.33406e8/Tk)))
+Caww(Tk) = -1e-6 * exp( -0.10728876e2 + 1.0/Tk * (0.347802e4 + 1.0/Tk*(-0.383383e6 +  0.33406e8/Tk)))
 
 """
     ```dCaww(Tk)```
@@ -240,8 +239,20 @@ function Cm(Tk, xv)
 end
 
 
+const g = (-0.58002206e4, 0.13914993e1, -0.48640239e-1,  0.41764768e-4, -0.14452093e-7, 0.65459673e1)
+const m = (-0.56745359e4, 0.63925247e1, -0.96778430e-2,  0.62215701e-6,  0.20747825e-8,
+           -0.94840240e-12, 0.41635019e1)
+
+"""
+    ```Pws_l(Tk)```
+
+Saturation pressure of vapor pressure over liquid water.
+This implements equation 17 from [1].
+
+ * `Tk` Temperature in K
+ * Output: Pa
+"""
 function Pws_l(Tk)
-    g = (-0.58002206e4, 0.13914993e1, -0.48640239e-1,  0.41764768e-4, -0.14452093e-7, 0.65459673e1)
     
     exp((g[1] + Tk*(g[2] + Tk*(g[3] + Tk*(g[4]+Tk*g[5]))))/Tk + g[6]*log(Tk))
                     
@@ -249,16 +260,32 @@ end
 
 
 
+"""
+    ```Pws_s(Tk)```
+
+Saturation pressure of vapor pressure over ice.
+This implements equation 18 from [1].
+
+ * `Tk` Temperature in K
+ * Output: Pa
+"""
 function Pws_s(Tk)
-    m = (-0.56745359e4, 0.63925247e1, -0.96778430e-2, 0.62215701e-6,
-         0.20747825e-8, -0.94840240e-12, 0.41635019e1)
-  
+
   
     exp( (m[1] + Tk*(m[2] + Tk*(m[3] + Tk*(m[4] + Tk*(m[5] + Tk*m[6])))))/Tk + m[7] * log(Tk) )
 end
 
 
+"""
+    ```Pws(Tk)```
 
+Saturation pressure of vapor pressure over liquid water or ice.
+This function calls either `Pws_l` or `Pws_s`. At a temperature of 
+273.16 both expressions are almost exactly the same (6 decimal figures).
+
+ * `Tk` Temperature in K
+ * Output: Pa
+"""
 function Pws(Tk)
     if Tk < 273.16
         Pws_s(Tk)
@@ -269,20 +296,47 @@ function Pws(Tk)
 end
    
 
+"""
+    ```dPws_s(Tk)```
+
+Derivative of saturation pressure of vapor pressure over ice.
+This implements the derivative of equation 18 from [1].
+
+ * `Tk` Temperature in K
+ * Output: Pa/K
+"""
 function dPws_s(Tk)
     x1 = Pws_s(Tk)
-    x2 = 0.56745359e4/(Tk*Tk) + 0.41635019e1/Tk - 0.96778430e-2 + 0.12443140e-5*Tk + 0.62243475e-8 * Tk*Tk - 0.37936096e-11*Tk*Tk*Tk
-    
+    x2 = 1.0/Tk*(m[7] - m[1]/Tk) + m[3] + Tk*(2*m[4] + Tk*(3*m[5] +4*m[6]*Tk))
+  
     return x1*x2
 end
 
+"""
+    ```dPws_s(Tk)```
+
+Derivative of saturation pressure of vapor pressure over water.
+This implements the derivative of equation 17 from [1].
+
+ * `Tk` Temperature in K
+ * Output: Pa/K
+"""
 function dPws_l(Tk)
     x1 = Pws_l(Tk)
-    x2 = 0.58002206e4/(Tk*Tk)+0.65459673e1/Tk-0.48640239e-1 + 0.83529536e-4*Tk -0.43356279e-7 * Tk*Tk
-
-    x1*x2
+    x2 = 1.0/Tk*(g[6] - g[1]/Tk) + g[3] + Tk*(2*g[4] + 3*g[5]*Tk)
+    return x1*x2 
 end
 
+
+"""
+    ```dPws(Tk)```
+
+Derivative of saturation pressure of vapor pressure over liquid water and ice.
+This combines the functions `dPws_l` and `dPws_s`.
+
+ * `Tk` Temperature in K
+ * Output: Pa/K
+"""
 function dPws(Tk)
     if Tk < 273.16
         dPws_s(Tk)
@@ -292,11 +346,23 @@ function dPws(Tk)
 end
   
 
+const gg = (2.127925e2, 7.305398e0, 1.969953e-1, 1.103701e-2, 1.849307e-3, 5.145087e-6)
+
+"""
+    ```Tws(P)```
+
+Calculates the saturation temperature of water vapor. 
+This function is the inverse of function `Pws(T)`. 
+First an approximation was obtained and then a Newton
+iteration is used to obtain more accurate data.
+
+ * `P` Saturation pressure in Pa
+ * Output: Saturation temperature in K.
+"""
 function Tws(P)
 
-    g = (2.127925e2, 7.305398e0, 1.969953e-1, 1.103701e-2, 1.849307e-3,	 5.145087e-6)
     lnP = log(P)
-    T = g[1] + lnP * (g[2] + lnP*(g[3] + lnP*(g[4] + lnP*g[5]))) + g[6] * P
+    T = gg[1] + lnP * (gg[2] + lnP*(gg[3] + lnP*(gg[4] + lnP*gg[5]))) + gg[6] * P
 
     NMAX = 100
     EPS = 1e-11
@@ -316,11 +382,43 @@ function Tws(P)
 end
 
 
+"""
+    ```molarvol```
+
+Molar volume of moist air given the molar fraction of water vapor.
+Assumes a real gas.
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `xv`  Molar fraction of water vapor
+ * Output: molar volume in m^3/mol
+"""
+molarvol(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
 vM_(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
 
+"""
+Specific volume of saturated water vapor in m^3/kg
+"""
+volumev(Tk) = vM_v_(Tk) / Mv
+
 v_v_(Tk) = vM_v_(Tk) / Mv
+
+"""
+Density of saturated water vapor in kg/m^3
+"""
+densityv(Tk) = 1/v_v_(Tk)
 r_v_(Tk) = 1/v_v_(Tk)
 
+"""
+    ```Z(Tk, P, xv)```
+
+Compressibility factor of moist air.
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `xv` molar fraction of water vapor.
+
+"""
 function Z(Tk, P, xv)
 
     xa = 1-xv
@@ -345,6 +443,16 @@ function Z(Tk, P, xv)
 end
 
 
+"""
+
+    ```e_factor(Tk,P)```
+
+Enhancement factor of moist air. 
+Uses an iterative procedure to calculate the Enhancement factor defined 
+in equation 18 [2]
+
+
+"""
 function e_factor(Tk, P)
     f = 1.0
     EPS = 1e-7
@@ -369,7 +477,12 @@ function e_factor(Tk, P)
 end
 
 
+"""
+    ```lnf(Tk, P, xas)```
 
+Auxiliary function used to calculate the enhancement factor.
+Actually, this function implements the RHS of eq. 18 of [2].
+"""
 function lnf(Tk, P, xas)
 
     vc = v_f_(Tk) * Mv
