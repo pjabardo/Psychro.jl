@@ -1,51 +1,244 @@
+using Unitful
 
 
+"Molecular weight of air in kg/mol"
+const Ma = 0.0289635
 
+"Molecular weight of water in kg/mol"
+const Mv = 0.01801528
 
-const Ma = 28.9635 #/// Massa molecular equivalente do ar em kg/kmol, adotado de Giacomo
-const Mv = 18.01528 #/// Massa molecular da água em kg/kmol
-const R = 8314.41  #/// Constante universal dos gases J/(kmol.K)
-const T0 = 273.15 #/// Frerezing point of water
+"Universal gas constant kg m^2 /s^2 /K /mol"
+const R = 8.314459848
+
+"Melting point of water"
+const T0 = 273.15u"K"
 
     
 
+
 """
+    ```Baa(Tk)```
+
 Virial coefficient Bₐₐ of dry air eq 10 [2]
 
-Input: `Tk` Temperature in K
-Output: Virial coefficient
+ * `Tk` Temperature in K
+ * Output: Bₐₐ in m^3/mol
+
 """
-Baa(Tk) = (0.349568e2 - 0.668772e4/Tk - 0.210141e7/(Tk*Tk) + 0.924746e8/(Tk*Tk*Tk)) / 1e3
+Baa(Tk) = 0.349568e-4 + (1.0/Tk)*(-0.668772e-2 + (1.0/Tk) * (-0.210141e1 + 0.924746e2/Tk))
 
-"Virial coefficient B' saturated vapor eq 15 [1]"
+"""
+    ```dBaa(Tk)```
+
+Derivative of Bₐₐ(T). Calculated from equation 10 [2].
+
+ * `Tk` Temperature in K
+ * Output: Bₐₐ in m^3/mol/K
+
+"""
+dBaa(Tk) = 1.0/(Tk*Tk) * (0.668772e-2 + (1.0/Tk)*(0.420282e-1 - 2.774238e-2/Tk))
+
+"""
+    ```Caa(Tk)```
+
+Second virial coefficient Cₐₐₐ of dry air eq 11 [2].
+
+ * `Tk` Temperature in K
+ * Output: Bₐₐ in m^6/mol^2
+
+"""
+Caaa(Tk) = (0.125975e-8 + 1.0/Tk * (-0.190905e-6 + 0.632467e-4/Tk))
+
+"""
+    ```dCaa(Tk)```
+
+Derivative of second virial coefficient Cₐₐₐ of dry air eq 11 [2].
+
+ * `Tk` Temperature in K
+ * Output: Bₐₐ in m^6/mol^2/K
+
+"""
+dCaaa(Tk) = 1.0/(Tk*Tk) * (0.190905e-6 - 1.264934e-4/Tk) 
+
+
+"""
+    ```Blin(Tk)```
+
+Virial coefficient B' saturated vapor eq 15 [1]
+
+ * `Tk` Temperature in K
+ * Output: B' in Pa^(-1)
+"""
 Blin(Tk) = 0.70e-8 - 0.147184e-8 * exp(1734.29/Tk) # Pa^(-1)
-Clin(Tk) = 0.104e-14 - 0.335297e-17*exp(3645.09/Tk) # Pa^(-2)
-dBlin(Tk) = 0.255260e-5/(Tk*Tk) * exp(1734.29/Tk)
-dClin(Tk) = 0.122219e-13/(Tk*Tk) * exp(3645.09/Tk)
-Bww(Tk) = R * Tk * Blin(Tk)
-Baw(Tk) = (0.32366097e2 - 0.141138e5/Tk - 0.1244535e7/(Tk*Tk) - 0.2348789e10/(Tk*Tk*Tk*Tk))/1e3
-dBaa(Tk) = (0.668772e4/(Tk*Tk) + 0.420282e7/(Tk*Tk*Tk) - 0.277424e9/(Tk*Tk*Tk*Tk))/1e3
-dBww(Tk) = R * (Tk * dBlin(Tk) + Blin(Tk))
-dBaw(Tk) = (0.141138e5/(Tk*Tk) + 0.248907e7/(Tk*Tk*Tk) + 0.93951568e10/pow(Tk, 5))
-Caaa(Tk) = (0.125975e4 - 0.190905e6/Tk + 0.632467e8/(Tk*Tk))/1e6
-Cwww(Tk) = R*Tk*R*Tk * (Clin(Tk) + Blin(Tk)^2)
-Caaw(Tk) = (0.482737e3 + 0.105678e6/Tk - 0.656394e8/(Tk*Tk) + 0.294442e11/(Tk*Tk*Tk) - 0.319317e13/(Tk*Tk*Tk*Tk)) / 1e6
-Caww(Tk) = -1e6* exp( -0.10728876e2 + 0.347802e4/Tk - 0.383383e6/(Tk*Tk)
-			 + 0.33406e8/(Tk*Tk*Tk))/1e6
-dCaaa(Tk) = (0.190905e6/(Tk*Tk) - 0.126493e9/(Tk*Tk*Tk)) / 1e6
-dCwww(Tk) = R*Tk*R*Tk * (dClin(Tk) + 2*Blin(Tk) * dBlin(Tk)) + (2*R*R*Tk) * (Clin(Tk) + Blin(Tk)^2)
-dCaaw(Tk) = (-0.105678e6/(Tk*Tk) + 1.312788e8/(Tk*Tk*Tk) - 8.83326e10/(Tk^4)) / 1e6
-dCaww(Tk) = (-0.347802e4/(Tk*Tk) + 2*0.383383e6/(Tk*Tk*Tk) - 3*0.33406e8/Tk^4) * Caww(Tk)
 
+"""
+Second virial coefficient C' saturated vapor eq 16 [1]
+
+ * `Tk` Temperature in K
+ * Output: B' in Pa^(-2)
+"""
+Clin(Tk) = 0.104e-14 - 0.335297e-17*exp(3645.09/Tk) # Pa^(-2)
+
+
+"""
+    ```dBlin(Tk)```
+
+Derivative of virial coefficient dB'/dT saturated vapor eq 15 [1]
+
+ * `Tk` Temperature in K
+ * Output: B' in Pa^(-1)/K
+"""
+dBlin(Tk) = 2.5525974e-6/(Tk*Tk) * exp(1734.29/Tk)
+
+
+"""
+    ```dClin(Tk)```
+
+Derivative of Second virial coefficient dC'/dT saturated vapor eq 16 [1]
+
+ * `Tk` Temperature in K
+ * Output: B' in Pa^(-2)/K
+"""
+dClin(Tk) = 1.2221877e-14/(Tk*Tk) * exp(3645.09/Tk)
+
+
+"""
+    ```Bww(Tk)```
+
+Virial coefficient Bww of saturated vapor eq 19 [2]
+
+ * `Tk` Temperature in K
+ * Output: Bww in m^3/mol
+"""
+Bww(Tk) = R * Tk * Blin(Tk)
+
+"""
+    ```dBww(Tk)```
+
+Derivative of virial coefficient dBww/dT of saturated vapor eq 19 [2]
+
+ * `Tk` Temperature in K
+ * Output: dBww/dT in m^3/mol/K
+"""
+dBww(Tk) = R * (Tk * dBlin(Tk) + Blin(Tk))
+
+
+"""
+    ```Cwww(Tk)```
+
+Second virial coefficient Cwww of saturated vapor eq 20 [2]
+
+ * `Tk` Temperature in K
+ * Output: Cwww in m^3/mol
+"""
+Cwww(Tk) = R*R*Tk*Tk * (Clin(Tk) + Blin(Tk)^2)
+
+
+"""
+    ```dCwww(Tk)```
+
+Derivative of second virial coefficient dCww/dT of saturated vapor eq 20 [2]
+
+ * `Tk` Temperature in K
+ * Output: dCwww/dT in m^3/mol/K
+"""
+dCwww(Tk) = R*Tk*R*Tk * (dClin(Tk) + 2*Blin(Tk) * dBlin(Tk)) + (2*R*R*Tk) * (Clin(Tk) + Blin(Tk)^2)
+
+
+"""
+    ```Baw(Tk)```
+
+Cross virial coefficient Baw of saturated vapor eq 15 [2]
+
+ * `Tk` Temperature in K
+ * Output: Baw in m^3/mol
+"""
+Baw(Tk) = 0.32366097e-4 + 1.0/Tk * (-0.141138e-1 + 1.0/Tk * (-0.1244535e1 - 0.2348789e4/(Tk*Tk)))
+
+
+"""
+    ```Baw(Tk)```
+
+Derivative of cross virial coefficient Bww of saturated vapor eq 15 [2]
+
+ * `Tk` Temperature in K
+ * Output: dBaw/dT in m^3/mol/K
+"""
+dBaw(Tk) = 1.0/(Tk*Tk) * (0.141138e-1 + 1.0/Tk * (0.248907e1 + 0.93951568e4 /(Tk*Tk)))
+
+"""
+    ```Caaw(Tk)```
+
+Cross virial coefficient Caaw of saturated vapor eq 16 [2]
+
+ * `Tk` Temperature in K
+ * Output: Caaw in m^6/mol^2
+"""
+Caaw(Tk) = 0.482737e-9 + 1.0/Tk * (0.105678e-6 + 1.0/Tk *
+                                   (-0.656394e-4 + 1.0/Tk*
+                                    (0.294442e-1 - 0.319317e1/Tk)))
+
+"""
+    ```dCaaw(Tk)```
+
+Derivative of cross virial coefficient dCaaw/dT of saturated vapor eq 16 [2]
+
+ * `Tk` Temperature in K
+ * Output: dCaaw/dT in m^6/mol^2/K
+"""
+dCaaw(Tk) = 1.0/(Tk*Tk) * (-0.105678e-6 + 1.0/Tk*(1.312788e-4 + 1.0/Tk*(-0.883326e-1 + 1.277268/Tk)))
+
+
+"""
+    ```Caww(Tk)```
+
+Cross virial coefficient Caaw of saturated vapor eq 17 [2]
+
+ * `Tk` Temperature in K
+ * Output: Caww in m^6/mol^2
+"""
+Caww(Tk) = -1e-6 * exp( -0.10728876e2 + 1.0/Tk * (0.347802e4 1.0/Tk*(-0.383383e6 + 
+			                                             0.33406e8/Tk)))
+
+"""
+    ```dCaww(Tk)```
+
+Derivative of cross virial coefficient dCaaw/dT of saturated vapor eq 17 [2]
+
+ * `Tk` Temperature in K
+ * Output: dCaww/dT in m^6/mol^2/K
+"""
+dCaww(Tk) = 1.0/(Tk*Tk) * (-0.347802e4 + 1.0/Tk * (2*0.383383e6 - 3*0.33406e8/Tk)) * Caww(Tk)
+
+                        
+"""
+    ```Bm(Tk,xv)```
+
+First virial coefficient Bm of moist air of saturated vapor eq 2 [2]
+
+ * `Tk` Temperature in K
+ * `xv` Molar fraction of water vapor in the moist air
+ * Output: Baw in m^3/mol
+"""
 function Bm(Tk, xv)
     xa = 1 - xv
     xa*xa*Baa(Tk) + 2*xa*xv*Baw(Tk) + xv*xv*Bww(Tk)
 end
 
+"""
+    ```Cm(Tk,xv)```
+
+Second virial coefficient Cm of moist air of saturated vapor eq 3 [2]
+
+ * `Tk` Temperature in K
+ * `xv` Molar fraction of water vapor in the moist air
+ * Output: Baw in m^6/mol^2
+"""
 function Cm(Tk, xv)
     xa = 1-xv
     xa*xa*xa*Caaa(Tk) + 3*xa*xa*xv*Caaw(Tk) + 3*xa*xv*xv*Caww(Tk) + xv*xv*xv*Cwww(Tk)
 end
+
 
 function Pws_l(Tk)
     g = (-0.58002206e4, 0.13914993e1, -0.48640239e-1,  0.41764768e-4, -0.14452093e-7, 0.65459673e1)
