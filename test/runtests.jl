@@ -66,3 +66,51 @@ Testing the virial coefficients. Table 1 from reference [2].
 @test    456 ≈ Psychro.dCaww(373.15)*1e12 atol=1.0
 @test   86.9 ≈ Psychro.dCaww(473.15)*1e12 atol=0.1
 # Note that on table 1, the last line is 8.69 instead of 86.9. Probably a typo in the paper.
+
+# Appendix of ref. [1]. First table
+# Specific volume of saturated ice:
+@test 1.0768e-3 ≈ Psychro.volumeice(173.15) atol=0.0001e-3
+@test 1.0829e-3 ≈ Psychro.volumeice(223.15) atol=0.0001e-3
+@test 1.0909e-3 ≈ Psychro.volumeice(273.16) atol=0.0001e-3
+
+# Specific volume of saturated liquid water
+@test 1.00021e-3 ≈ Psychro.volumewater(273.16) atol=0.00001e-3
+@test 1.01215e-3 ≈ Psychro.volumewater(323.15) atol=0.00001e-3
+@test 1.04346e-3 ≈ Psychro.volumewater(373.15) atol=0.00001e-3 # In the paper there is a typo in the power of 10: 1.04346e10
+@test 1.09050e-3 ≈ Psychro.volumewater(423.15) atol=0.00001e-3
+@test 1.15653e-3 ≈ Psychro.volumewater(473.15) atol=0.00001e-3
+
+
+# Table 2 of reference [2]
+# Enhancement factor
+P = 0.1e6
+@test 1.0105 ≈ Psychro.efactor(173.15, P) atol=0.0001
+@test 1.0039 ≈ Psychro.efactor(273.15, P) atol=0.0001
+@test 1.0039 ≈ Psychro.efactor(363.15, P) atol=0.0001
+P = 0.5e6
+@test 1.054 ≈ Psychro.efactor(173.15, P) atol=0.001
+@test 1.0177 ≈ Psychro.efactor(273.15, P) atol=0.0006  # I think the table has a typo!!?
+@test 1.0180 ≈ Psychro.efactor(363.15, P) atol=0.0001
+@test 1.0188 ≈ Psychro.efactor(373.15, P) atol=0.0001
+@test 1.0022 ≈ Psychro.efactor(423.15, P) atol=0.0001
+P = 1.0e6
+@test 1.113 ≈ Psychro.efactor(173.15, P) atol=0.001
+@test 1.0353 ≈ Psychro.efactor(273.15, P) atol=0.0015  # I think the table has a typo!!?
+@test 1.0284 ≈ Psychro.efactor(363.15, P) atol=0.0001
+@test 1.0295 ≈ Psychro.efactor(373.15, P) atol=0.0001
+@test 1.0288 ≈ Psychro.efactor(423.15, P) atol=0.0001
+@test 1.0235 ≈ Psychro.efactor(433.15, P) atol=0.0001
+@test 1.0142 ≈ Psychro.efactor(443.15, P) atol=0.0001
+
+
+P = 5.0e6
+@test 1.820 ≈ Psychro.efactor(173.15, P) atol=0.001
+@test 1.191 ≈ Psychro.efactor(273.15, P) atol=0.008  # I think the table has a typo!!?
+@test 1.1102 ≈ Psychro.efactor(363.15, P) atol=0.0001
+@test 1.1082 ≈ Psychro.efactor(373.15, P) atol=0.0001
+@test 1.111 ≈ Psychro.efactor(423.15, P) atol=0.001
+@test 1.114 ≈ Psychro.efactor(433.15, P) atol=0.001
+@test 1.116 ≈ Psychro.efactor(443.15, P) atol=0.001
+@test 1.117 ≈ Psychro.efactor(453.15, P) atol=0.001
+@test 1.116 ≈ Psychro.efactor(473.15, P) atol=0.001
+

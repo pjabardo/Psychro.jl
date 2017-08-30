@@ -381,6 +381,42 @@ function Tws(P)
     return T
 end
 
+"""
+    volumeice(Tk)
+
+Specific volume of saturated ice. Equation 2 from ref. [1].
+
+ * `Tk` Temperature in K.
+ * Output: specific volume in m^3/kg
+"""
+volumeice(Tk) = 0.1070003e-2 + Tk*(-0.249936e-7 + 0.371611e-9*Tk)
+
+
+"""
+    densitywater(Tk)
+
+Density of saturated water. Equation 5 from ref. [1].
+
+ * `Tk` Temperature in K.
+ * Output: density kg/m^3
+"""
+densitywater(Tk) = ( -0.2403360201e4 +
+                     Tk*(-0.140758895e1 +
+                         Tk * (0.1068287657e0 +
+                               Tk*(-0.2914492351e-3 + Tk*(0.373497936e-6 - Tk*0.21203787e-9))))) /
+                               ( -0.3424442728e1 + 0.1619785e-1*Tk )
+
+                               
+"""
+    volumewater(Tk)
+
+Specific volume of saturated water. Inverse of equation 5 from ref. [1].
+
+ * `Tk` Temperature in K.
+ * Output: specific volume in m^3/kg
+"""
+volumewater(Tk) = 1.0 / densitywater(Tk)
+
 
 """
     ```molarvol```
@@ -453,7 +489,7 @@ in equation 18 [2]
 
 
 """
-function e_factor(Tk, P)
+function efactor(Tk, P)
     f = 1.0
     EPS = 1e-7
     NMAX = 100
@@ -484,67 +520,109 @@ Auxiliary function used to calculate the enhancement factor.
 Actually, this function implements the RHS of eq. 18 of [2].
 """
 function lnf(Tk, P, xas)
-
-    vc = v_f_(Tk) * Mv
-    kk = kappa_f(Tk)
-
-    if Tk < 273.15
+    if Tk < 273.16
+        vc = volumeice(Tk) * Mv
+        p = Pws_s(Tk)
         k = 0.0
     else
+        vc = volumewater(Tk) * Mv
+        p = Pws_l(Tk)
         k = henryk(Tk)
     end
+    
+    κ = kappa_f(Tk)
 
+    RT = R*Tk
+    RT2 = RT*RT
+    xas2 = xas*xas
+    p2 = p*p
+    P2 = P*P
+    
     baa = Baa(Tk)
     bww = Bww(Tk)
     baw = Baw(Tk)
     caaa = Caaa(Tk)
+    caaw = Caaw(Tk)
+    caww = Caww(Tk)
+    cwww = Cwww(Tk)
     
-
-    RT = R*Tk
-    p = Pws(Tk)
-    t1 = vc/RT * ( (1 + kk*p)*(P-p) - 0.5*kk*(P*P - p*p) )
-    t2 = log(1.0 - k*xas*P) + (xas*xas*P/RT)*Baa(Tk) - (2*xas*xas*P/RT)*Baw(Tk)
-    t3 = -(P-p-xas*xas*P)/RT*Bww(Tk) + xas*xas*xas*P*P/(RT*RT) * Caaa(Tk)
-    t4 = 3*xas*xas*(1.0-2.0*xas)*P*P/(2*RT*RT) * Caaw(Tk) - (3*xas*xas*(1-xas)*P*P)/(RT*RT) * Baa(Tk)*Baw(Tk)
-    t7 = 6.0*xas*xas*(1-xas)^2*P*P/(RT*RT)*Bww(Tk)*Baw(Tk) - 3.0*xas^4*P*P/(2.0*RT*RT)*Baa(Tk)^2
-    t8 = -2.0*xas*xas*(1.0-xas)*(1.0-3.0*xas)*P*P/(RT*RT) * Baw(Tk)^2 - (p*p - (1.0+3.0*xas)*(1.0-xas)^3*P*P) / (2*RT*RT) * Bww(Tk)^2
+    t1 = vc/RT * ( (1 + κ*p)*(P-p) - 0.5*κ*(P2 - p2) )
+    t2 = log(1.0 - k*xas*P) + (xas2*P/RT)*baa - (2*xas2*P/RT)*baw
+    t3 = -(P-p-xas2*P)/RT*bww + xas2*xas*P*P/RT2 * caaa
+    t4 = 3*xas2*(1-2xas)*P2/(2*RT2) * caaw - (3xas2*(1-xas)*P2)/RT2 * caww
+    t5 = -( (1+2xas)*(1-xas)^2*P2 - p2 )/(2*RT2) * cwww - (xas2*(1-3xas)*(1-xas)*P2)/RT2 * baa*bww
+    t6 = -(2xas2*xas*(2-3xas)*P2) / RT2 * baa*baw + ( 6xas2*(1-xas)^2*P2 )/RT2 * bww*baw
+    t7 = -3xas2*xas2*P2/(2RT2)*baa*baa - ( 2xas2*(1-xas)*(1-3xas)*P2 )/RT2 * baw*baw
+    t8 = -( p2 - (1+3xas)*(1-xas)^3*P2 ) / (2*RT2) * bww*bww
+    
 
    return t1+t2+t3+t4+t5+t6+t7+t8
    
 end
 
+
+"""
+    henryk_O2(Tk)
+
+Henry's coefficient for solubility of O2 in water.
+Implements equation 23 from ref. [2]. See reference [3]
+Valid for temperatures between 273.15 K and 500 K
+
+ * `Tk` Temperature in K
+ * Output: k in atm/mol * 10^(-4)
+"""
 function henryk_O2(Tk)
 
-    tau = 1000.0/Tk
-    alfa = -0.0005943
-    beta = -0.1470
-    gama = -0.05120
-    delta = -0.1076
-    eps = 0.8447
-    a2 = alfa;
-    a1 = gama*tau + delta
-    a0 = beta*tau*tau + eps*tau - 1.0
+    τ = 1000.0/Tk
+    α = -0.0005943
+    β = -0.1470
+    γ = -0.05120
+    δ = -0.1076
+    ɛ = 0.8447
+    a2 = α;
+    a1 = γ*τ + δ
+    a0 = β*τ*τ + ɛ*τ - 1.0
 
     10^( (-a1-sqrt(a1*a1 - 4.0*a2*a0)) / (2.0*a2))
 end
 
 
+"""
+    henryk_N2(Tk)
+
+Henry's coefficient for solubility of N2 in water.
+Implements equation 23 from ref. [2]. See reference [3]
+Valid for temperatures between 273.15 K and 500 K
+
+ * `Tk` Temperature in K
+ * Output: k in atm/mol * 10^(-4)
+"""
 function henryk_N2(Tk)
 
-    tau = 1000.0/Tk
-    alfa = -0.1021
-    beta = -0.1482
-    gama = -0.019
-    delta = -0.03741
-    eps = 0.851
-    a2 = alfa;
-    a1 = gama*tau + delta
-    a0 = beta*tau*tau + eps*tau - 1.0
+    τ = 1000.0/Tk
+    α = -0.1021
+    β = -0.1482
+    γ = -0.019
+    δ = -0.03741
+    ɛ = 0.851
+    a2 = α;
+    a1 = γ*τ + δ
+    a0 = β*τ*τ + ɛ*τ - 1.0
 
     10^( (-a1-sqrt(a1*a1 - 4.0*a2*a0)) / (2.0*a2))
 end
 
 
+"""
+    henryk(Tk)
+
+Henry's coefficient for solubility of air in water.
+Implements equations 24 and 25 from ref. [2]. See reference [3]
+Valid for temperatures between 273.15 K and 500 K
+
+ * `Tk` Temperature in K
+ * Output: k in atm/mol fract * 10^(-4)
+"""
 function henryk(Tk)
 
     kO2 = henryk_O2(Tk)
@@ -558,25 +636,48 @@ function henryk(Tk)
 end
 
 
+"""
+    kappa_l(Tk)
+
+Isothermal compressibility of saturated liquid water. Equation 21, ref. [2].
+Range of applicability 0°C - 150°C but can be extended up to 200°C
+More details in reference [4].
+ * `Tk` Temperature in K
+ * Output: κ in 1/Pa
+"""
 function kappa_l(Tk)
     Tc = Tk - 273.15
 
+    #@check_range Tc 0 200
     if Tc < 100.0
-        k = (50.88496 + 0.6163813*Tc + 1.459187e-3*Tc*Tc + 20.08438e-6*Tc*Tc*Tc -
-	     58.47727e-9*Tc^4 + 410.4110e-12 * Tc^5) / (1.0 + 19.67348e-3*Tc);
+        k = (50.88496 + Tc*(0.6163813 +
+                            Tc*(1.459187e-3 +
+                                Tc*(20.08438e-6 + Tc*(-58.47727e-9 + Tc*0.4104110e-9))))) /
+                                (1.0 + 0.1967348e-1*Tc)
+        
+                                    
     else
-        k =  (50.884917 + 0.62590623*Tc + 1.3848668e-3*Tc*Tc + 21.603427e-6*Tc*Tc*Tc -
-	      72.087667e-9*Tc^4 + 465.45054e-12 * Tc^5) / (1 + 19.859983e-3*Tc);
+        k = (50.884917 + Tc*(0.62590623 +
+                            Tc*(1.3848668e-3 +
+                                Tc*(21.603427e-6 + Tc*(-0.72087667e-7 + Tc*0.46545054e-9))))) /
+                                (1.0 + 0.1967348e-1*Tc)
     end
 
     k*1e-11
 end
 
+"""
+    kappa_s(Tk)
 
+Isothermal compressibility of ice. Equation 22, ref. [2].
+
+ * `Tk` Temperature in K
+ * Output: κ in 1/Pa
+"""
 kappa_s(Tk) = (8.875 + 0.0165*Tk)*1e-11
 
 kappa_f(Tk) = 
-    if Tk < 273.15
+    if Tk < 273.16
         kappa_s(Tk)
     else
         kappa_l(Tk)
