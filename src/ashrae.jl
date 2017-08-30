@@ -36,7 +36,7 @@ Derivative of Bₐₐ(T). Calculated from equation 10 [2].
  * Output: Bₐₐ in m^3/mol/K
 
 """
-dBaa(Tk) = 1.0/(Tk*Tk) * (0.668772e-2 + (1.0/Tk)*(0.420282e-1 - 2.774238e-2/Tk))
+dBaa(Tk) = 1.0/(Tk*Tk) * (0.668772e-2 + (1.0/Tk)*(0.420282e1 - 2.774238e2/Tk))
 
 """
     ```Caa(Tk)```
@@ -186,7 +186,7 @@ Derivative of cross virial coefficient dCaaw/dT of saturated vapor eq 16 [2]
  * `Tk` Temperature in K
  * Output: dCaaw/dT in m^6/mol^2/K
 """
-dCaaw(Tk) = 1.0/(Tk*Tk) * (-0.105678e-6 + 1.0/Tk*(1.312788e-4 + 1.0/Tk*(-0.883326e-1 + 1.277268/Tk)))
+dCaaw(Tk) = 1.0/(Tk*Tk) * (-0.105678e-6 + 1.0/Tk*(1.312788e-4 + 1.0/Tk*(-0.883326e-1 + 1.277268e1/Tk)))
 
 
 """
