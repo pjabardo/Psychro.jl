@@ -435,7 +435,7 @@ vM_(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
 """
 Specific volume of saturated water vapor in m^3/kg
 """
-volumev(Tk) = vM_v_(Tk) / Mv
+volumevapor(Tk) = vM_v_(Tk) / Mv
 
 v_v_(Tk) = vM_v_(Tk) / Mv
 
@@ -845,46 +845,73 @@ end
 v_(Tk, P, xv) = vM_(Tk, P, xv) / ((1.0-xv)*Ma + xv*Mv)
 r_(Tk, P, xv) = 1.0 / v_(Tk, P, xv)
 
-function h_s_(Tk)
-    D = [-0.647595E3,
-         0.274292e0,
-         0.2910583e-2,
-         0.1083437e-5,
-	 0.107e-5]
 
-  return 1000.0 * (D[1] + D[2]*Tk + D[3]*Tk*Tk + D[4]*Tk*Tk*Tk + D[5]*Pws(Tk))
+"""
+    enthalpyice(Tk)
+
+Specific enthalpy of saturated ice. Equation 3 of ref. [1].
+
+ * `Tk` Temperature in K
+ * Output: J/kg
+
+"""
+function enthalpyice(Tk)
+
+    -0.647595E6 + Tk*(0.274292e3 + Tk*(0.2910583e1 + Tk*0.1083437e-2)) + 0.107e-2*Pws_s(Tk)
+    
 end
 
-function h_l_(Tk)
-    beta0 = Tk * v_l_(273.15) * dPws(273.15)
-    beta = Tk * v_l_(Tk) * dPws(Tk) - beta0
-    L = [-0.11411380e4,
-         0.41930463e1,
-         -0.8134865e-4,
-         0.1451133e-6,
-         -0.1005230e-9,
-         -0.563473,
-	 -0.036]
-    
-    M = [-0.1141837121e4,
-	 0.4194325677e1,
-	 -0.6908894163e-4,
-	 0.105555302e-6,
-	 -0.7111382234e-10,
-	 0.6059e-6]
+
+const L = (-0.11411380e7, 0.41930463e4, -0.8134865e-1,
+           0.1451133e-3, -0.1005230e-6, -0.563473e3, -0.036)
+const M = (-0.1141837121e7, 0.4194325677e4, -0.6908894163e-1,
+           0.105555302e-3, -0.7111382234e-7, 0.6059e-3)
+
+"""
+    enthalpywater(Tk)
+
+Specific enthalpy of saturated water. Equations 6-11 of ref. [1].
+
+ * `Tk` Temperature in K
+ * Output: J/kg
+
+"""
+function enthalpywater(Tk)
+    β₀ = Tk * volumewater(273.16) * dPws_l(273.16)
+    β = Tk * volumewater(Tk) * dPws_l(Tk) 
 
     if Tk < 373.125
-        alfa = L[1] + L[2]*Tk + L[3]*Tk*Tk + L[4]*Tk*Tk*Tk + L[5]*Tk*Tk*Tk*Tk +
-        L[6] * 10^(L[7] * (Tk- 273.15))
-    elseif 373.125 < Tk <= 403.128
-        alfa = M[1] + M[2]*Tk + M[3]*Tk*Tk + M[4]*Tk*Tk*Tk + M[5]*Tk*Tk*Tk*Tk;
-    else
-        alfa = M[1] + M[2]*Tk + M[3]*Tk*Tk + M[4]*Tk*Tk*Tk +
-        M[5]*Tk*Tk*Tk*Tk - M[6]*(Tk - 403.128)^3.1
+        α = L[1] + Tk*(L[2] + Tk*(L[3] + Tk*(L[4] + Tk*L[5]))) +
+            L[6] * 10^(L[7] * (Tk - 273.16))
+    else 
+        α = M[1] + Tk*(M[2] + Tk*(M[3] + Tk*(M[4] + Tk*M[5])))
+        if Tk > 403.128
+            α = α - M[6]*(Tk - 403.128)^3.1
+        end
     end
-
-    return 1000.0*alfa + beta
+    
+    return α + β - β₀
 end
+
+
+"""
+    enthalpyvapor(Tk)
+
+Specific enthalpy of saturated water vapor. Equation 19 of ref. [1].
+
+ * `Tk` Temperature in K
+ * Output: J/kg
+
+"""
+function enthalpyvapor(Tk)
+
+    termo1 = 0.199798e7 + Tk*(0.18035706e4 +
+                              Tk*(0.36400463e0 +
+                                  Tk*(-0.14677622e-2 + Tk*(0.28726608e-5 - Tk*0.17508262e-8))))
+    p = Pws(Tk)
+    return termo1 - R*Tk*Tk*p*(dBlin(Tk) + 0.5*dClin(Tk)*p)
+end
+
 
 
 h_f_(Tk) =

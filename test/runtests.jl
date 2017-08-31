@@ -81,6 +81,19 @@ Testing the virial coefficients. Table 1 from reference [2].
 @test 1.15653e-3 ≈ Psychro.volumewater(473.15) atol=0.00001e-3
 
 
+# Saturation enthalpy of saturated ice
+@test -507.215e3 ≈ Psychro.enthalpyice(173.15) atol=0.001e3
+@test -429.413e3 ≈ Psychro.enthalpyice(223.15) atol=0.001e3
+@test -333.429e3 ≈ Psychro.enthalpyice(273.15) atol=0.001e3  # The table presents -333.409. Typo???
+
+# Saturation enthalpy of saturated liquid water
+@test 0.0 ≈ Psychro.enthalpywater(273.16) atol=1.0
+@test 209.330e3 ≈ Psychro.enthalpywater(323.15) atol=5
+@test 419.158e3 ≈ Psychro.enthalpywater(373.15) atol=5
+@test 632.210e3 ≈ Psychro.enthalpywater(423.15) atol=9
+@test 852.329e3 ≈ Psychro.enthalpywater(473.15) atol=15
+
+
 # Table 2 of reference [2]
 # Enhancement factor
 P = 0.1e6
@@ -113,4 +126,43 @@ P = 5.0e6
 @test 1.116 ≈ Psychro.efactor(443.15, P) atol=0.001
 @test 1.117 ≈ Psychro.efactor(453.15, P) atol=0.001
 @test 1.116 ≈ Psychro.efactor(473.15, P) atol=0.001
+
+# Saturation pressure of water vapor over ice
+# Second table in the appendix of reference [1]
+@test 1.40510e-3 ≈ Psychro.Pws_s(173.15) atol=0.00001e-3
+@test 6.11153e2 ≈ Psychro.Pws_s(273.15) atol=0.00001e2
+
+# Saturation pressure of water vapor over liquid water
+# Second table in the appendix of reference [1]
+@test 6.11213e2 ≈ Psychro.Pws_l(273.15) atol=0.00001e2
+@test 1.01419e5 ≈ Psychro.Pws_l(373.15) atol=0.00001e5
+@test 1.55507e6 ≈ Psychro.Pws_l(473.15) atol=0.00001e6
+
+
+
+# Testing saturation temperature function:
+@test Psychro.Tws(Psychro.Pws_s(173.15)) ≈ 173.15 atol=1e-5
+@test Psychro.Tws(Psychro.Pws_s(223.15)) ≈ 223.15 atol=1e-5
+@test Psychro.Tws(Psychro.Pws_s(273.15)) ≈ 273.15 atol=1e-5
+@test Psychro.Tws(Psychro.Pws_s(273.16)) ≈ 273.16 atol=1e-5
+@test Psychro.Tws(Psychro.Pws_l(273.16)) ≈ 273.16 atol=1e-5
+@test Psychro.Tws(Psychro.Pws_l(323.15)) ≈ 323.15 atol=1e-5
+@test Psychro.Tws(Psychro.Pws_l(373.15)) ≈ 373.15 atol=1e-5
+@test Psychro.Tws(Psychro.Pws_l(473.15)) ≈ 473.15 atol=1e-5
+
+
+# First virial coefficient of saturated vapor B'
+# Second table in the appendix of reference [1]
+@test -3.2939e-5 ≈ Psychro.Blin(173.15) atol=0.0001e-5
+@test -8.3497e-7 ≈ Psychro.Blin(273.15) atol=0.0001e-7
+@test -1.4658e-7 ≈ Psychro.Blin(373.15) atol=0.0001e-5
+@test -5.0508e-8 ≈ Psychro.Blin(473.15) atol=0.0001e-5
+
+# Second virial coefficient of saturated vapor C'
+# Second table in the appendix of reference [1]
+@test -4.6563e-9 ≈ Psychro.Clin(173.15) atol=0.0001e-9
+@test -2.0928e-12 ≈ Psychro.Clin(273.15) atol=0.0001e-12
+@test -5.7548e-14 ≈ Psychro.Clin(373.15) atol=0.0001e-14
+@test -6.3933e-15 ≈ Psychro.Clin(473.15) atol=0.0001e-15
+
 
