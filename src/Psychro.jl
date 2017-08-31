@@ -17,6 +17,19 @@ in the articles listed below.
 """
 module Psychro
 
+"Molecular weight of air in kg/mol"
+const Ma = 0.0289635
+
+"Molecular weight of water in kg/mol"
+const Mv = 0.01801528
+
+"Universal gas constant kg m^2 /s^2 /K /mol"
+const R = 8.314459848
+
+"Melting point of water"
+const T0 = 273.15
+
 # package code goes here
-include("ashrae.jl")
+include("hyland83.jl")
+include("hyland83a.jl")
 end # module
