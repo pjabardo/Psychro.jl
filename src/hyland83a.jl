@@ -421,7 +421,7 @@ vM_(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
 """
 Specific volume of saturated water vapor in m^3/kg
 """
-volumevapor(Tk) = vM_v_(Tk) / Mv
+volumevapor1(Tk) = vM_v_(Tk) / Mv
 
 v_v_(Tk) = vM_v_(Tk) / Mv
 

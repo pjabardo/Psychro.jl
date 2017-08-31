@@ -165,4 +165,23 @@ P = 5.0e6
 @test -5.7548e-14 ≈ Psychro.Clin(373.15) atol=0.0001e-14
 @test -6.3933e-15 ≈ Psychro.Clin(473.15) atol=0.0001e-15
 
+# Specific enthalpy of saturated water vapor
+# First table of the appendix of ref. [1]
+@test 2315.87 ≈ Psychro.enthalpyvapor(173.15)/1000 atol=0.01
+@test 2408.41 ≈ Psychro.enthalpyvapor(223.15)/1000 atol=0.01
+@test 2500.81 ≈ Psychro.enthalpyvapor(273.16)/1000 atol=0.01
+@test 2591.29 ≈ Psychro.enthalpyvapor(323.15)/1000 atol=0.01
+@test 2675.46 ≈ Psychro.enthalpyvapor(373.15)/1000 atol=0.01
+@test 2746.15 ≈ Psychro.enthalpyvapor(423.15)/1000 atol=0.01
+@test 2793.11 ≈ Psychro.enthalpyvapor(473.15)/1000 atol=0.01
+
+# Specific volume of saturated water vapor
+# First table of the appendix of ref. [1]
+@test 5.6873e7 ≈ Psychro.volumevapor(173.15) atol=0.0001e7
+@test 2.6146e4 ≈ Psychro.volumevapor(223.15) atol=0.0001e4
+@test 2.0601e2 ≈ Psychro.volumevapor(273.16) atol=0.0001e2
+@test 1.2030e1 ≈ Psychro.volumevapor(323.15) atol=0.0001e1
+@test 1.6718e0 ≈ Psychro.volumevapor(373.15) atol=0.0001e0
+@test 3.9253e-1 ≈ Psychro.volumevapor(423.15) atol=0.0001e-1
+@test 1.2722e-1 ≈ Psychro.volumevapor(473.15) atol=0.0001e0
 

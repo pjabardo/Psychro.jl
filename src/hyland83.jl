@@ -290,6 +290,10 @@ end
 
 Specific enthalpy of saturated water vapor. Equation 19 of ref. [1].
 
+Equation 19 ha a problem since the terms using the virial coefficients are actually
+molar enthalpies not specific. Dividing these terms by Mv solves any issues and
+the equations match the table in the appendix!
+
  * `Tk` Temperature in K
  * Output: J/kg
 
@@ -300,7 +304,37 @@ function enthalpyvapor(Tk)
                               Tk*(0.36400463e0 +
                                   Tk*(-0.14677622e-2 + Tk*(0.28726608e-5 - Tk*0.17508262e-8))))
     p = Pws(Tk)
-    return termo1 - R*Tk*Tk*p*(dBlin(Tk) + 0.5*dClin(Tk)*p)
+    return termo1 - (R*Tk*Tk*p*(dBlin(Tk) + 0.5*dClin(Tk)*p))/Mv
+end
+
+
+
+"""
+    volumevapor(Tk)
+
+Molar volume of saturated vapor. Eq. 21 reference [1].
+
+ * `Tk` Temperature in K
+ * Output: m^3/mol
+"""
+function molarvolvapor(Tk)
+
+    p = Pws(Tk)
+    return R*Tk/p * (1.0 + p*(Blin(Tk)  + p*Clin(Tk)))
+end
+
+"""
+    volumevapor(Tk)
+
+Specific volume of saturated vapor. Eq. 21 reference [1].
+
+ * `Tk` Temperature in K
+ * Output: m^3/kg
+"""
+function volumevapor(Tk)
+
+    p = Pws(Tk)
+    return R*Tk/p * (1.0 + p*(Blin(Tk)  + p*Clin(Tk))) / Mv
 end
 
 
