@@ -7,6 +7,37 @@
 =#    
 
 
+
+"""
+    ```Bm(Tk,xv)```
+
+First virial coefficient Bm of moist air of saturated vapor eq 2 [2]
+
+ * `Tk` Temperature in K
+ * `xv` Molar fraction of water vapor in the moist air
+ * Output: Baw in m^3/mol
+"""
+function Bm(Tk, xv)
+    xa = 1 - xv
+    xa*xa*Baa(Tk) + 2*xa*xv*Baw(Tk) + xv*xv*Bww(Tk)
+end
+
+"""
+    ```Cm(Tk,xv)```
+
+Second virial coefficient Cm of moist air of saturated vapor eq 3 [2]
+
+ * `Tk` Temperature in K
+ * `xv` Molar fraction of water vapor in the moist air
+ * Output: Baw in m^6/mol^2
+"""
+function Cm(Tk, xv)
+    xa = 1-xv
+    xa*xa*xa*Caaa(Tk) + 3*xa*xa*xv*Caaw(Tk) + 3*xa*xv*xv*Caww(Tk) + xv*xv*xv*Cwww(Tk)
+end
+
+
+
 """
     ```Baa(Tk)```
 
@@ -52,48 +83,6 @@ Derivative of second virial coefficient Cₐₐₐ of dry air eq 11 [2].
 dCaaa(Tk) = 1.0/(Tk*Tk) * (0.190905e-6 - 1.264934e-4/Tk) 
 
 
-
-"""
-    ```Bww(Tk)```
-
-Virial coefficient Bww of saturated vapor eq 19 [2]
-
- * `Tk` Temperature in K
- * Output: Bww in m^3/mol
-"""
-Bww(Tk) = R * Tk * Blin(Tk)
-
-"""
-    ```dBww(Tk)```
-
-Derivative of virial coefficient dBww/dT of saturated vapor eq 19 [2]
-
- * `Tk` Temperature in K
- * Output: dBww/dT in m^3/mol/K
-"""
-dBww(Tk) = R * (Tk * dBlin(Tk) + Blin(Tk))
-
-
-"""
-    ```Cwww(Tk)```
-
-Second virial coefficient Cwww of saturated vapor eq 20 [2]
-
- * `Tk` Temperature in K
- * Output: Cwww in m^3/mol
-"""
-Cwww(Tk) = R*R*Tk*Tk * (Clin(Tk) + Blin(Tk)^2)
-
-
-"""
-    ```dCwww(Tk)```
-
-Derivative of second virial coefficient dCww/dT of saturated vapor eq 20 [2]
-
- * `Tk` Temperature in K
- * Output: dCwww/dT in m^3/mol/K
-"""
-dCwww(Tk) = R*Tk*R*Tk * (dClin(Tk) + 2*Blin(Tk) * dBlin(Tk)) + (2*R*R*Tk) * (Clin(Tk) + Blin(Tk)^2)
 
 
 """
@@ -159,101 +148,6 @@ Derivative of cross virial coefficient dCaaw/dT of saturated vapor eq 17 [2]
  * Output: dCaww/dT in m^6/mol^2/K
 """
 dCaww(Tk) = 1.0/(Tk*Tk) * (-0.347802e4 + 1.0/Tk * (2*0.383383e6 - 3*0.33406e8/Tk)) * Caww(Tk)
-
-                        
-"""
-    ```Bm(Tk,xv)```
-
-First virial coefficient Bm of moist air of saturated vapor eq 2 [2]
-
- * `Tk` Temperature in K
- * `xv` Molar fraction of water vapor in the moist air
- * Output: Baw in m^3/mol
-"""
-function Bm(Tk, xv)
-    xa = 1 - xv
-    xa*xa*Baa(Tk) + 2*xa*xv*Baw(Tk) + xv*xv*Bww(Tk)
-end
-
-"""
-    ```Cm(Tk,xv)```
-
-Second virial coefficient Cm of moist air of saturated vapor eq 3 [2]
-
- * `Tk` Temperature in K
- * `xv` Molar fraction of water vapor in the moist air
- * Output: Baw in m^6/mol^2
-"""
-function Cm(Tk, xv)
-    xa = 1-xv
-    xa*xa*xa*Caaa(Tk) + 3*xa*xa*xv*Caaw(Tk) + 3*xa*xv*xv*Caww(Tk) + xv*xv*xv*Cwww(Tk)
-end
-
-
-const g = (-0.58002206e4, 0.13914993e1, -0.48640239e-1,  0.41764768e-4, -0.14452093e-7, 0.65459673e1)
-const m = (-0.56745359e4, 0.63925247e1, -0.96778430e-2,  0.62215701e-6,  0.20747825e-8,
-           -0.94840240e-12, 0.41635019e1)
-
-
-"""
-    ```molarvol```
-
-Molar volume of moist air given the molar fraction of water vapor.
-Assumes a real gas.
-
- * `Tk` Temperature in K
- * `P` Pressure in Pa
- * `xv`  Molar fraction of water vapor
- * Output: molar volume in m^3/mol
-"""
-molarvol(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
-vM_(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
-
-"""
-Specific volume of saturated water vapor in m^3/kg
-"""
-volumevapor(Tk) = vM_v_(Tk) / Mv
-
-v_v_(Tk) = vM_v_(Tk) / Mv
-
-"""
-Density of saturated water vapor in kg/m^3
-"""
-densityv(Tk) = 1/v_v_(Tk)
-r_v_(Tk) = 1/v_v_(Tk)
-
-"""
-    ```Z(Tk, P, xv)```
-
-Compressibility factor of moist air.
-
- * `Tk` Temperature in K
- * `P` Pressure in Pa
- * `xv` molar fraction of water vapor.
-
-"""
-function Z(Tk, P, xv)
-
-    xa = 1-xv
-    vmi = R*Tk/P
-    vm = vmi
-    b = Bm(Tk, xv)
-    c = Cm(Tk, xv)
-    NMAX = 100
-    EPS = 1e-8
-
-    for iter = 0:NMAX
-        vmn = R*Tk/P * (1 + b/vm + c/(vm*vm))
-        erro = abs(vmn-vm)
-        vm = vmn
-
-        if erro < EPS
-            return vm/vmi
-        end
-    end
-
-    vm/vmi
-end
 
 
 """
@@ -338,6 +232,101 @@ function lnf(Tk, P, xas)
 end
 
 
+
+
+
+"""
+    ```Bww(Tk)```
+
+Virial coefficient Bww of saturated vapor eq 19 [2]
+
+ * `Tk` Temperature in K
+ * Output: Bww in m^3/mol
+"""
+Bww(Tk) = R * Tk * Blin(Tk)
+
+"""
+    ```dBww(Tk)```
+
+Derivative of virial coefficient dBww/dT of saturated vapor eq 19 [2]
+
+ * `Tk` Temperature in K
+ * Output: dBww/dT in m^3/mol/K
+"""
+dBww(Tk) = R * (Tk * dBlin(Tk) + Blin(Tk))
+
+
+"""
+    ```Cwww(Tk)```
+
+Second virial coefficient Cwww of saturated vapor eq 20 [2]
+
+ * `Tk` Temperature in K
+ * Output: Cwww in m^3/mol
+"""
+Cwww(Tk) = R*R*Tk*Tk * (Clin(Tk) + Blin(Tk)^2)
+
+
+"""
+    ```dCwww(Tk)```
+
+Derivative of second virial coefficient dCww/dT of saturated vapor eq 20 [2]
+
+ * `Tk` Temperature in K
+ * Output: dCwww/dT in m^3/mol/K
+"""
+dCwww(Tk) = R*Tk*R*Tk * (dClin(Tk) + 2*Blin(Tk) * dBlin(Tk)) + (2*R*R*Tk) * (Clin(Tk) + Blin(Tk)^2)
+
+
+"""
+    kappa_l(Tk)
+
+Isothermal compressibility of saturated liquid water. Equation 21, ref. [2].
+Range of applicability 0°C - 150°C but can be extended up to 200°C
+More details in reference [4].
+ * `Tk` Temperature in K
+ * Output: κ in 1/Pa
+"""
+function kappa_l(Tk)
+    Tc = Tk - 273.15
+
+    #@check_range Tc 0 200
+    if Tc < 100.0
+        k = (50.88496 + Tc*(0.6163813 +
+                            Tc*(1.459187e-3 +
+                                Tc*(20.08438e-6 + Tc*(-58.47727e-9 + Tc*0.4104110e-9))))) /
+                                (1.0 + 0.1967348e-1*Tc)
+        
+                                    
+    else
+        k = (50.884917 + Tc*(0.62590623 +
+                            Tc*(1.3848668e-3 +
+                                Tc*(21.603427e-6 + Tc*(-0.72087667e-7 + Tc*0.46545054e-9))))) /
+                                (1.0 + 0.1967348e-1*Tc)
+    end
+
+    k*1e-11
+end
+
+"""
+    kappa_s(Tk)
+
+Isothermal compressibility of ice. Equation 22, ref. [2].
+
+ * `Tk` Temperature in K
+ * Output: κ in 1/Pa
+"""
+kappa_s(Tk) = (8.875 + 0.0165*Tk)*1e-11
+
+kappa_f(Tk) = 
+    if Tk < 273.16
+        kappa_s(Tk)
+    else
+        kappa_l(Tk)
+    end
+
+
+
 """
     henryk_O2(Tk)
 
@@ -413,52 +402,68 @@ function henryk(Tk)
 end
 
 
-"""
-    kappa_l(Tk)
 
-Isothermal compressibility of saturated liquid water. Equation 21, ref. [2].
-Range of applicability 0°C - 150°C but can be extended up to 200°C
-More details in reference [4].
+
+"""
+    ```molarvol```
+
+Molar volume of moist air given the molar fraction of water vapor.
+Assumes a real gas.
+
  * `Tk` Temperature in K
- * Output: κ in 1/Pa
+ * `P` Pressure in Pa
+ * `xv`  Molar fraction of water vapor
+ * Output: molar volume in m^3/mol
 """
-function kappa_l(Tk)
-    Tc = Tk - 273.15
+molarvol(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
+vM_(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
 
-    #@check_range Tc 0 200
-    if Tc < 100.0
-        k = (50.88496 + Tc*(0.6163813 +
-                            Tc*(1.459187e-3 +
-                                Tc*(20.08438e-6 + Tc*(-58.47727e-9 + Tc*0.4104110e-9))))) /
-                                (1.0 + 0.1967348e-1*Tc)
-        
-                                    
-    else
-        k = (50.884917 + Tc*(0.62590623 +
-                            Tc*(1.3848668e-3 +
-                                Tc*(21.603427e-6 + Tc*(-0.72087667e-7 + Tc*0.46545054e-9))))) /
-                                (1.0 + 0.1967348e-1*Tc)
+"""
+Specific volume of saturated water vapor in m^3/kg
+"""
+volumevapor(Tk) = vM_v_(Tk) / Mv
+
+v_v_(Tk) = vM_v_(Tk) / Mv
+
+"""
+Density of saturated water vapor in kg/m^3
+"""
+densityv(Tk) = 1/v_v_(Tk)
+r_v_(Tk) = 1/v_v_(Tk)
+
+"""
+    ```Z(Tk, P, xv)```
+
+Compressibility factor of moist air.
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `xv` molar fraction of water vapor.
+
+"""
+function Z(Tk, P, xv)
+
+    xa = 1-xv
+    vmi = R*Tk/P
+    vm = vmi
+    b = Bm(Tk, xv)
+    c = Cm(Tk, xv)
+    NMAX = 100
+    EPS = 1e-8
+
+    for iter = 0:NMAX
+        vmn = R*Tk/P * (1 + b/vm + c/(vm*vm))
+        erro = abs(vmn-vm)
+        vm = vmn
+
+        if erro < EPS
+            return vm/vmi
+        end
     end
 
-    k*1e-11
+    vm/vmi
 end
 
-"""
-    kappa_s(Tk)
-
-Isothermal compressibility of ice. Equation 22, ref. [2].
-
- * `Tk` Temperature in K
- * Output: κ in 1/Pa
-"""
-kappa_s(Tk) = (8.875 + 0.0165*Tk)*1e-11
-
-kappa_f(Tk) = 
-    if Tk < 273.16
-        kappa_s(Tk)
-    else
-        kappa_l(Tk)
-    end
 
 
 
