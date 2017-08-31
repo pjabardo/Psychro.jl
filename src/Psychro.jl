@@ -29,6 +29,30 @@ const R = 8.314459848
 "Melting point of water"
 const T0 = 273.15
 
+abstract type AbstractMaterial end
+abstract type AbstractFluid <: AbstractMaterial end
+
+struct DryAir <: AbstractFluid end
+struct Vapor <: AbstractFluid end
+struct MoistAir <: AbstractFluid end
+
+
+abstract type ThermodynamicProperty end
+
+struct Volume <: ThermodynamicProperty end
+struct Enthalpy <: ThermodynamicProperty end
+struct Entropy <: ThermodynamicProperty end
+struct Temperature <: ThermodynamicProperty end
+struct Pressure <: ThermodynamicProperty end
+struct Density <: ThermodynamicProperty end
+struct MolarFraction <: ThermodynamicProperty end
+struct MassFraction <: ThermodynamicProperty end
+struct WetBulb <: ThermodynamicProperty end
+struct DewPoint <: ThermodynamicProperty end
+struct HumidityRatio <: ThermodynamicProperty end
+struct RelativeHumidity <: ThermodynamicProperty end
+
+
 # package code goes here
 include("hyland83.jl")
 include("hyland83a.jl")

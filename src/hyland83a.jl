@@ -83,6 +83,73 @@ Derivative of second virial coefficient Cₐₐₐ of dry air eq 11 [2].
 dCaaa(Tk) = 1.0/(Tk*Tk) * (0.190905e-6 - 1.264934e-4/Tk) 
 
 
+"""
+    molarvolair(Tk)
+
+Molar volume of dry air. Equation 12 of reference [1].
+This function requires iteration to compute the volume.
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `EPS`: Acceptable error
+ * `MAXITER`: Maixmum number of iterations
+ * Output: molar volume in m^3/mol
+"""
+function molarvolair(Tk, P, EPS=1e-8, MAXITER=100)
+
+    RT=R*Tk
+    va = RT/P
+
+    conv = false
+    b = Baa(Tk)
+    c = Caaa(Tk)
+    z0 = 1.0
+    z=1.0
+    niter = 0
+    for i = 1:MAXITER
+        z = 1.0 + 1/va*(b + c/va)
+        va = RT*z/P
+        if abs(z-z0) < EPS
+            conv = true
+            niter = i
+            break
+        end
+        z0 = z
+    end
+    return va
+end
+
+"""
+    volumeair
+
+Specific volume of dry air. Uses `molarvolair`.
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `EPS`: Acceptable error
+ * `MAXITER`: Maixmum number of iterations
+ * Output: molar volume in m^3/kg
+"""
+volumeair(Tk, P, EPS=1e-8, MAXITER=100) = molarvolair(Tk, P, EPS, MAXITER) / Ma
+
+
+"""
+    enthalpyair(Tk)
+
+Specific enthalpy of dry air. Equation 13 of reference [2]
+"""
+function enthalpyair(Tk, P, EPS=1e-8, MAXITER=100)
+    h1 = -0.79078691e4 + Tk*(0.28709015e2 +
+                             Tk*(0.26431805e-2 +
+                                 Tk*(-0.10405863e-4 +
+                                     Tk*(0.18660410e-7 - 0.97843331e-11*Tk))))
+    va = molarvolair(Tk, P, EPS, MAXITER)
+
+    h2 = R*Tk/va * ( (Baa(Tk) - Tk*dBaa(Tk)) + (Caaa(Tk) - 0.5*Tk*dCaaa(Tk))/va )
+
+    return (h1 + h2)/Ma
+    
+end
 
 
 """

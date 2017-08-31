@@ -67,6 +67,59 @@ Testing the virial coefficients. Table 1 from reference [2].
 @test   86.9 ≈ Psychro.dCaww(473.15)*1e12 atol=0.1
 # Note that on table 1, the last line is 8.69 instead of 86.9. Probably a typo in the paper.
 
+
+# Specific volume of dry air
+# Table 3
+P = 0.1e6
+@test 0.49510 ≈ Psychro.volumeair(173.15, P) atol=0.00003
+@test 0.78364 ≈ Psychro.volumeair(273.15, P) atol=0.0001
+@test 1.0713 ≈ Psychro.volumeair(373.15, P) atol=0.0001
+@test 1.3586 ≈ Psychro.volumeair(473.15, P) atol=0.0001
+
+P = 0.5e6
+@test 0.09747 ≈ Psychro.volumeair(173.15, P) atol=0.00003
+@test 0.15637 ≈ Psychro.volumeair(273.15, P) atol=0.00003
+@test 0.21436 ≈ Psychro.volumeair(373.15, P) atol=0.00003
+@test 0.27207 ≈ Psychro.volumeair(473.15, P) atol=0.00003
+
+P = 1e6
+@test 0.04775 ≈ Psychro.volumeair(173.15, P) atol=0.00003
+@test 0.07797 ≈ Psychro.volumeair(273.15, P) atol=0.00003
+@test 0.10725 ≈ Psychro.volumeair(373.15, P) atol=0.00003
+@test 0.13625 ≈ Psychro.volumeair(473.15, P) atol=0.00003
+
+P = 5e6
+@test 0.00795 ≈ Psychro.volumeair(173.15, P) atol=0.00003
+@test 0.01533 ≈ Psychro.volumeair(273.15, P) atol=0.00003
+@test 0.02162 ≈ Psychro.volumeair(373.15, P) atol=0.00003
+@test 0.02763 ≈ Psychro.volumeair(473.15, P) atol=0.00003
+
+# Specific enthalpy of dry air
+# Table 3
+P = 0.1e6
+@test -100.63 ≈ Psychro.enthalpyair(173.15, P)/1000 atol=0.01
+@test    0.004≈ Psychro.enthalpyair(273.15, P)/1000 atol=0.01
+@test  100.79 ≈ Psychro.enthalpyair(373.15, P)/1000 atol=0.01
+@test  202.55 ≈ Psychro.enthalpyair(473.15, P)/1000 atol=0.01
+
+P = 0.5e6
+@test -103.17 ≈ Psychro.enthalpyair(173.15, P)/1000 atol=0.01
+@test   -1.10 ≈ Psychro.enthalpyair(273.15, P)/1000 atol=0.01
+@test  100.26 ≈ Psychro.enthalpyair(373.15, P)/1000 atol=0.01
+@test  202.30 ≈ Psychro.enthalpyair(473.15, P)/1000 atol=0.01
+
+P = 1e6
+@test -106.42 ≈ Psychro.enthalpyair(173.15, P)/1000 atol=0.01
+@test   -2.48 ≈ Psychro.enthalpyair(273.15, P)/1000 atol=0.01
+@test   99.60 ≈ Psychro.enthalpyair(373.15, P)/1000 atol=0.01
+@test  202.00 ≈ Psychro.enthalpyair(473.15, P)/1000 atol=0.01
+
+P = 5e6
+@test -135.55 ≈ Psychro.enthalpyair(173.15, P)/1000 atol=0.01
+@test  -13.15 ≈ Psychro.enthalpyair(273.15, P)/1000 atol=0.01
+@test   94.63 ≈ Psychro.enthalpyair(373.15, P)/1000 atol=0.01
+@test  199.8 ≈ Psychro.enthalpyair(473.15, P)/1000 atol=0.1
+
 # Appendix of ref. [1]. First table
 # Specific volume of saturated ice:
 @test 1.0768e-3 ≈ Psychro.volumeice(173.15) atol=0.0001e-3
