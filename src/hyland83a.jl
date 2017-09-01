@@ -137,6 +137,12 @@ volumeair(Tk, P, EPS=1e-8, MAXITER=100) = molarvolair(Tk, P, EPS, MAXITER) / Ma
     enthalpyair(Tk)
 
 Specific enthalpy of dry air. Equation 13 of reference [2]
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `EPS`: Acceptable error
+ * `MAXITER`: Maixmum number of iterations
+ * Output: molar volume in m^3/kg
 """
 function enthalpyair(Tk, P, EPS=1e-8, MAXITER=100)
     h1 = -0.79078691e4 + Tk*(0.28709015e2 +
@@ -149,6 +155,25 @@ function enthalpyair(Tk, P, EPS=1e-8, MAXITER=100)
 
     return (h1 + h2)/Ma
     
+end
+
+
+"""
+    entropyair(Tk)
+
+Specific entropy of dry air. Equation 14 of reference [2]
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `EPS`: Acceptable error
+ * `MAXITER`: Maixmum number of iterations
+ * Output: molar volume in m^3/kg
+"""
+function entropyair(Tk, P, EPS=1e-8, MAXITER=100)
+
+    s1 = -0.6175159e3 + Tk*(0.52863603e-2 +
+                            Tk*(-0.15608795e-3 + 1))
+
 end
 
 

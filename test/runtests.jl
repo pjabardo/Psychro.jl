@@ -1,7 +1,17 @@
 include("../src/Psychro.jl")
 using Base.Test
 
-# write your own tests here
+
+# Testing the polynomial evaluation macro:
+p = randn(6)
+x = 0.33
+@test @evalpoly(x, p[1], p[2]) == Psychro.@evalpoly2(x, p, 2)
+@test @evalpoly(x, p[1], p[2], p[3]) == Psychro.@evalpoly2(x, p, 3)
+@test @evalpoly(x, p[1], p[2], p[3], p[4]) == Psychro.@evalpoly2(x, p, 4)
+@test @evalpoly(x, p[1], p[2], p[3], p[4], p[5]) == Psychro.@evalpoly2(x, p, 5)
+@test @evalpoly(x, p[1], p[2], p[3], p[4], p[5], p[6]) == Psychro.@evalpoly2(x, p, 5)
+
+
 
 #=
 Testing the virial coefficients. Table 1 from reference [2].
@@ -237,4 +247,5 @@ P = 5.0e6
 @test 1.6718e0 ≈ Psychro.volumevapor(373.15) atol=0.0001e0
 @test 3.9253e-1 ≈ Psychro.volumevapor(423.15) atol=0.0001e-1
 @test 1.2722e-1 ≈ Psychro.volumevapor(473.15) atol=0.0001e0
+
 

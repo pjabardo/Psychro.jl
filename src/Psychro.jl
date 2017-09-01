@@ -54,6 +54,7 @@ struct RelativeHumidity <: ThermodynamicProperty end
 
 
 # package code goes here
+include("utilities.jl")
 include("hyland83.jl")
 include("hyland83a.jl")
 end # module
