@@ -15,12 +15,27 @@ First virial coefficient Bm of moist air of saturated vapor eq 2 [2]
 
  * `Tk` Temperature in K
  * `xv` Molar fraction of water vapor in the moist air
- * Output: Baw in m^3/mol
+ * Output: Bm in m^3/mol
 """
 function Bm(Tk, xv)
     xa = 1 - xv
     xa*xa*Baa(Tk) + 2*xa*xv*Baw(Tk) + xv*xv*Bww(Tk)
 end
+
+"""
+    ```dBm(Tk,xv)```
+
+Derivative of first virial coefficient Bm of moist air of saturated vapor eq 2 [2]
+
+ * `Tk` Temperature in K
+ * `xv` Molar fraction of water vapor in the moist air
+ * Output: dBm/dT in m^3/mol/K
+"""
+function dBm(Tk, xv)
+    xa = 1.0 - xv
+    xa*xa*dBaa(Tk) + 2*xa*xv*dBaw(Tk) + xv*xv*dBww(Tk)
+end
+
 
 """
     ```Cm(Tk,xv)```
@@ -29,13 +44,26 @@ Second virial coefficient Cm of moist air of saturated vapor eq 3 [2]
 
  * `Tk` Temperature in K
  * `xv` Molar fraction of water vapor in the moist air
- * Output: Baw in m^6/mol^2
+ * Output: Cm in m^6/mol^2
 """
 function Cm(Tk, xv)
     xa = 1-xv
     xa*xa*xa*Caaa(Tk) + 3*xa*xa*xv*Caaw(Tk) + 3*xa*xv*xv*Caww(Tk) + xv*xv*xv*Cwww(Tk)
 end
 
+"""
+    ```dCm(Tk,xv)```
+
+Derivative of second virial coefficient Cm of moist air of saturated vapor eq 3 [2]
+
+ * `Tk` Temperature in K
+ * `xv` Molar fraction of water vapor in the moist air
+ * Output: dCm/dT in m^6/mol^2/K
+"""
+function dCm(Tk, xv)
+    xa = 1-xv
+    xa*xa*xa*dCaaa(Tk) + 3*xa*xa*xv*dCaaw(Tk) + 3*xa*xv*xv*dCaww(Tk) + xv*xv*xv*dCwww(Tk)
+end
 
 
 """
@@ -577,6 +605,25 @@ function Zmoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
 end
 
 
+const a = (0.63290874e1, 0.28709015e2, 0.26431805e-2,
+           -0.10405863e-4, 0.18660410e-7, -0.97843331e-11)
+const d = (-0.5008e-2, 0.32491829e2, 0.65576345e-2,
+           -0.26442147e-4, 0.51751789e-7, -0.31541624e-10)
+"""
+    enthalpymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
+
+Specific enthalphy of moist air.
+
+"""
+function enthalpymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
+    xa = 1.0-xv
+    h1 = xa*(@evalpoly2(Tk, a, 6) -7914.1982)
+    h2 = xv*(@evalpoly2(Tk, d, 6) + 35994.17)
+    vm = molarvolmoist(Tk, P, xv, EPS, MAXITER)
+    h3 = R*Tk/vm * (Bm(Tk, xv) - Tk*dBm(Tk,xv)
+                    + 1/vm*( Cm(Tk,xv) - 0.5*Tk*dCm(Tk,xv) ) )
+    return (h1 + h2 + h3) / (xa*Ma)
+end
 
 
 

@@ -170,6 +170,39 @@ P=5e6
 @test 0.03315  ≈ volmoist(453.15, P) atol=0.00001
 @test 0.0402  ≈ volmoist(473.15, P) atol=0.0001
 
+hmoist(Tk, P) = Psychro.enthalpymoist(Tk, P, Psychro.efactor(Tk,P)*Psychro.Pws(Tk)/P)/1000
+P = 0.1e6
+@test -100.627 ≈ hmoist(173.15, P) atol=0.005
+@test    9.602 ≈ hmoist(273.15, P) atol=0.005
+@test   4035.0 ≈ hmoist(363.15, P) atol=0.3 # In the paper the number is 4305!
+
+P = 0.5e6
+@test -103.168 ≈ hmoist(173.15, P) atol=0.005
+@test    0.831 ≈ hmoist(273.15, P) atol=0.005
+@test   365.55 ≈ hmoist(363.15, P) atol=0.03
+@test   533.27 ≈ hmoist(373.15, P) atol=0.03
+@test   35957 ≈ hmoist(423.15, P) atol=2.0
+
+P = 1e6
+@test -106.415 ≈ hmoist(173.15, P) atol=0.005
+@test   -1.498 ≈ hmoist(273.15, P) atol=0.005
+@test   217.77 ≈ hmoist(363.15, P) atol=0.03
+@test   293.17 ≈ hmoist(373.15, P) atol=0.03
+@test   1788.8 ≈ hmoist(423.15, P) atol=0.5
+@test   3113.3 ≈ hmoist(433.15, P) atol=0.5
+@test   7206.0 ≈ hmoist(443.15, P) atol=2.0
+
+P = 5e6
+@test -135.547 ≈ hmoist(173.15, P) atol=0.005
+@test  -12.929 ≈ hmoist(273.15, P) atol=0.005
+@test   109.89 ≈ hmoist(363.15, P) atol=0.03
+@test   132.42 ≈ hmoist(373.15, P) atol=0.03
+@test   347.3 ≈ hmoist(423.15, P) atol=0.5
+@test   428.8 ≈ hmoist(433.15, P) atol=0.5
+@test   534.1 ≈ hmoist(443.15, P) atol=0.5
+@test   672.0 ≈ hmoist(453.15, P) atol=1.0
+@test   1113.0 ≈ hmoist(473.15, P) atol=1.0
+
 
 # Appendix of ref. [1]. First table
 # Specific volume of saturated ice:

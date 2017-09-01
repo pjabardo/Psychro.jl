@@ -140,8 +140,8 @@ dClin(Tk) = 1.2221877e-14/(Tk*Tk) * exp(3645.09/Tk)
 
 
 
-const g = (-0.58002206e4, 0.13914993e1, -0.48640239e-1,  0.41764768e-4, -0.14452093e-7, 0.65459673e1)
-const m = (-0.56745359e4, 0.63925247e1, -0.96778430e-2,  0.62215701e-6,  0.20747825e-8,
+const gg = (-0.58002206e4, 0.13914993e1, -0.48640239e-1,  0.41764768e-4, -0.14452093e-7, 0.65459673e1)
+const mm = (-0.56745359e4, 0.63925247e1, -0.96778430e-2,  0.62215701e-6,  0.20747825e-8,
            -0.94840240e-12, 0.41635019e1)
 
 
@@ -156,7 +156,7 @@ This implements equation 17 from [1].
 """
 function Pws_l(Tk)
     
-    exp((g[1] + Tk*(g[2] + Tk*(g[3] + Tk*(g[4]+Tk*g[5]))))/Tk + g[6]*log(Tk))
+    exp((gg[1] + Tk*(gg[2] + Tk*(gg[3] + Tk*(gg[4]+Tk*gg[5]))))/Tk + gg[6]*log(Tk))
                     
 end
 
@@ -174,7 +174,7 @@ This implements equation 18 from [1].
 function Pws_s(Tk)
 
   
-    exp( (m[1] + Tk*(m[2] + Tk*(m[3] + Tk*(m[4] + Tk*(m[5] + Tk*m[6])))))/Tk + m[7] * log(Tk) )
+    exp( (mm[1] + Tk*(mm[2] + Tk*(mm[3] + Tk*(mm[4] + Tk*(mm[5] + Tk*mm[6])))))/Tk + mm[7] * log(Tk) )
 end
 
 
@@ -189,10 +189,14 @@ This function calls either `Pws_l` or `Pws_s`. At a temperature of
  * Output: Pa
 """
 function Pws(Tk)
-    if Tk < 273.16
+    if Tk < 273.15
         Pws_s(Tk)
-    else
+    elseif Tk > 273.16
         Pws_l(Tk)
+    else
+        p1 = Pws_s(273.15)
+        p2 = Pws_l(273.16)
+        p2 * (Tk-273.15)/0.01 + p1 * (273.16-Tk)/0.01
     end
         
 end
@@ -209,7 +213,7 @@ This implements the derivative of equation 18 from [1].
 """
 function dPws_s(Tk)
     x1 = Pws_s(Tk)
-    x2 = 1.0/Tk*(m[7] - m[1]/Tk) + m[3] + Tk*(2*m[4] + Tk*(3*m[5] +4*m[6]*Tk))
+    x2 = 1.0/Tk*(mm[7] - mm[1]/Tk) + mm[3] + Tk*(2*mm[4] + Tk*(3*mm[5] +4*mm[6]*Tk))
   
     return x1*x2
 end
@@ -225,7 +229,7 @@ This implements the derivative of equation 17 from [1].
 """
 function dPws_l(Tk)
     x1 = Pws_l(Tk)
-    x2 = 1.0/Tk*(g[6] - g[1]/Tk) + g[3] + Tk*(2*g[4] + 3*g[5]*Tk)
+    x2 = 1.0/Tk*(gg[6] - gg[1]/Tk) + gg[3] + Tk*(2*gg[4] + 3*gg[5]*Tk)
     return x1*x2 
 end
 
@@ -242,13 +246,13 @@ This combines the functions `dPws_l` and `dPws_s`.
 function dPws(Tk)
     if Tk < 273.16
         dPws_s(Tk)
-    else
+    else Tk 
         dPws_l(Tk)
     end
 end
   
 
-const gg = (2.127925e2, 7.305398e0, 1.969953e-1, 1.103701e-2, 1.849307e-3, 5.145087e-6)
+const hh = (2.127925e2, 7.305398e0, 1.969953e-1, 1.103701e-2, 1.849307e-3, 5.145087e-6)
 
 """
     ```Tws(P)```
@@ -264,7 +268,7 @@ iteration is used to obtain more accurate data.
 function Tws(P)
 
     lnP = log(P)
-    T = gg[1] + lnP * (gg[2] + lnP*(gg[3] + lnP*(gg[4] + lnP*gg[5]))) + gg[6] * P
+    T = hh[1] + lnP * (hh[2] + lnP*(hh[3] + lnP*(hh[4] + lnP*hh[5]))) + hh[6] * P
 
     NMAX = 100
     EPS = 1e-11
