@@ -330,7 +330,17 @@ function lnf(Tk, P, xas)
    
 end
 
+"""
+    molarfracmoist_sat(Tk, P) 
 
+Molar fraction of water vapor in saturated moist air
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * Output: molar fraction
+
+"""
+molarfracmoist_sat(Tk, P) = efactor(Tk, P) * Pws(Tk) / P
 
 
 
@@ -504,7 +514,7 @@ end
 
 
 """
-    ```molarvol```
+    ```molarvolhum```
 
 Molar volume of moist air given the molar fraction of water vapor.
 Assumes a real gas.
@@ -514,78 +524,61 @@ Assumes a real gas.
  * `xv`  Molar fraction of water vapor
  * Output: molar volume in m^3/mol
 """
-molarvol(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
-vM_(Tk, P, xv) = Z(Tk, P, xv) * R * Tk / P
+molarvolmoist(Tk, P, xv, EPS=1e-8, MAXITER=100) = Zmoist(Tk, P, xv, EPS, MAXITER) * R * Tk / P
 
 """
-Specific volume of saturated water vapor in m^3/kg
-"""
-volumevapor1(Tk) = vM_v_(Tk) / Mv
+    ```volumemoist```
 
-v_v_(Tk) = vM_v_(Tk) / Mv
+Molar volume of moist air given the molar fraction of water vapor.
+Assumes a real gas.
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `xv`  Molar fraction of water vapor
+ * Output: molar volume in m^3/mol
+"""
+volumemoist(Tk, P, xv, EPS=1e-8, MAXITER=100) = molarvolmoist(Tk,P,xv,EPS,MAXITER) / (Ma*(1-xv))
+
 
 """
-Density of saturated water vapor in kg/m^3
-"""
-densityv(Tk) = 1/v_v_(Tk)
-r_v_(Tk) = 1/v_v_(Tk)
-
-"""
-    ```Z(Tk, P, xv)```
+    ```Zmoist(Tk, P, xv)```
 
 Compressibility factor of moist air.
 
  * `Tk` Temperature in K
  * `P` Pressure in Pa
  * `xv` molar fraction of water vapor.
-
+ * `EPS`: Acceptable error
+ * `MAXITER`: Maixmum number of iterations
+ * Output: Z (nondimensional)
 """
-function Z(Tk, P, xv)
+function Zmoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
 
-    xa = 1-xv
-    vmi = R*Tk/P
-    vm = vmi
+    RT = R*Tk
+    vm = RT/P
     b = Bm(Tk, xv)
     c = Cm(Tk, xv)
-    NMAX = 100
-    EPS = 1e-8
+    z0 = 1.0
+    z = 1.0
+    conv = false
+    for iter = 1:MAXITER
+        z = 1 + 1/vm * (b + c/vm)
 
-    for iter = 0:NMAX
-        vmn = R*Tk/P * (1 + b/vm + c/(vm*vm))
-        erro = abs(vmn-vm)
-        vm = vmn
+        vm = z*RT/P
 
-        if erro < EPS
-            return vm/vmi
+        if abs(z-z0) < EPS
+            conv = true
+            break
         end
+        z0 = z
     end
-
-    vm/vmi
+    # Still need to check convergence.
+    return z
 end
 
 
 
 
-abstract type AbstractPsychro end
-
-immutable Ashrae <: AbstractPsychro
-    Tmin::Float64
-    Tmax::Float64
-    Pmin::Float64
-    Pmax::Float64
-    xv::Float64
-    W::Float64
-    M::Float64
-end
-
-function Ashrae(xv)
-    w = Mv/Ma * xv/(1.0 - xv)
-    m = xv*Mv + (1.0-xv)*Ma
-
-    Ashrae(173.15, 473.15, 0.0, 5.0e6, xv, w, m)
-end
-
-Ashrae() = Ashrae(173.15, 473.15, 0.0, 5.0e6, 0.0, 0.0, Ma)
 
 
 function Ashrae(ch::Char, T, humidity, P)

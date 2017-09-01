@@ -138,6 +138,37 @@ P = 0.1e6
 @test  0.5597 ≈ Psychro.entropyair(473.15, P)/1000 atol=0.0001
 
 
+# Table 4, appendix of reference [2]
+# Testing the volume of saturated moist air
+volmoist(Tk, P) = Psychro.volumemoist(Tk, P, Psychro.efactor(Tk,P)*Psychro.Pws(Tk)/P)
+P = 0.1e6
+@test 0.49510 ≈ volmoist(173.15, P) atol=0.00005
+@test 0.78846 ≈ volmoist(273.15, P) atol=0.00005
+@test 3.4974 ≈ volmoist(363.15, P) atol=0.0002
+P = 0.5e6
+@test 0.097466 ≈ volmoist(173.15, P) atol=0.000006
+@test 0.15657 ≈ volmoist(273.15, P) atol=0.00005
+@test 0.24273 ≈ volmoist(363.15, P) atol=0.00003
+@test 0.26904 ≈ volmoist(373.15, P) atol=0.00003
+P=1e6
+@test 0.047752 ≈ volmoist(173.15, P) atol=0.000006
+@test 0.078022 ≈ volmoist(273.15, P) atol=0.000005
+@test 0.11226 ≈ volmoist(363.15, P) atol=0.00001
+@test 0.11942 ≈ volmoist(373.15, P) atol=0.00001
+@test 0.23281 ≈ volmoist(423.15, P) atol=0.00002
+@test 0.32711 ≈ volmoist(433.15, P) atol=0.00002
+@test 0.61489 ≈ volmoist(443.15, P) atol=0.00005
+
+P=5e6
+@test 0.007951 ≈ volmoist(173.15, P) atol=0.000006
+@test 0.015331 ≈ volmoist(273.15, P) atol=0.000005
+@test 0.021310 ≈ volmoist(363.15, P) atol=0.00001
+@test 0.022073 ≈ volmoist(373.15, P) atol=0.00001
+@test 0.02727  ≈ volmoist(423.15, P) atol=0.00001
+@test 0.02885  ≈ volmoist(433.15, P) atol=0.00001
+@test 0.03077  ≈ volmoist(443.15, P) atol=0.00001
+@test 0.03315  ≈ volmoist(453.15, P) atol=0.00001
+@test 0.0402  ≈ volmoist(473.15, P) atol=0.0001
 
 
 # Appendix of ref. [1]. First table
