@@ -142,7 +142,7 @@ Specific enthalpy of dry air. Equation 13 of reference [2]
  * `P` Pressure in Pa
  * `EPS`: Acceptable error
  * `MAXITER`: Maixmum number of iterations
- * Output: molar volume in m^3/kg
+ * Output: m^3/kg
 """
 function enthalpyair(Tk, P, EPS=1e-8, MAXITER=100)
     h1 = -0.79078691e4 + Tk*(0.28709015e2 +
@@ -158,8 +158,13 @@ function enthalpyair(Tk, P, EPS=1e-8, MAXITER=100)
 end
 
 
+const ℓ =  (-0.16175159e3, 0.52863609e-2, -0.15608795e-4,
+            0.24880547e-7, -0.12230416e-10, 0.28709015e2)
+            
+
 """
     entropyair(Tk)
+
 
 Specific entropy of dry air. Equation 14 of reference [2]
 
@@ -167,13 +172,15 @@ Specific entropy of dry air. Equation 14 of reference [2]
  * `P` Pressure in Pa
  * `EPS`: Acceptable error
  * `MAXITER`: Maixmum number of iterations
- * Output: molar volume in m^3/kg
+ * Output: m^3/(kg.K)
 """
 function entropyair(Tk, P, EPS=1e-8, MAXITER=100)
 
-    s1 = -0.6175159e3 + Tk*(0.52863603e-2 +
-                            Tk*(-0.15608795e-3 + 1))
+    s1 = @evalpoly2(Tk, ℓ, 5) + ℓ[6]*log(Tk) - R*log(P/101325.0)
+    va = molarvolair(Tk, P, EPS, MAXITER)
+    s2 = R*log(P*va/R/Tk) - R/va * ( (Baa(Tk) + Tk*dBaa(Tk)) + 0.5/va * (Caaa(Tk) + Tk*dCaaa(Tk)))
 
+    return (s1 + s2) / Ma
 end
 
 

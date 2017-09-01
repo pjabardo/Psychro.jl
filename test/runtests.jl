@@ -9,7 +9,7 @@ x = 0.33
 @test @evalpoly(x, p[1], p[2], p[3]) == Psychro.@evalpoly2(x, p, 3)
 @test @evalpoly(x, p[1], p[2], p[3], p[4]) == Psychro.@evalpoly2(x, p, 4)
 @test @evalpoly(x, p[1], p[2], p[3], p[4], p[5]) == Psychro.@evalpoly2(x, p, 5)
-@test @evalpoly(x, p[1], p[2], p[3], p[4], p[5], p[6]) == Psychro.@evalpoly2(x, p, 5)
+@test @evalpoly(x, p[1], p[2], p[3], p[4], p[5], p[6]) == Psychro.@evalpoly2(x, p, 6)
 
 
 
@@ -129,6 +129,16 @@ P = 5e6
 @test  -13.15 ≈ Psychro.enthalpyair(273.15, P)/1000 atol=0.01
 @test   94.63 ≈ Psychro.enthalpyair(373.15, P)/1000 atol=0.01
 @test  199.8 ≈ Psychro.enthalpyair(473.15, P)/1000 atol=0.1
+
+# Specific entropy of dry air
+P = 0.1e6
+@test -0.4550 ≈ Psychro.entropyair(173.15, P)/1000 atol=0.0001
+@test  0.0038 ≈ Psychro.entropyair(273.15, P)/1000 atol=0.0001
+@test  0.3182 ≈ Psychro.entropyair(373.15, P)/1000 atol=0.0001
+@test  0.5597 ≈ Psychro.entropyair(473.15, P)/1000 atol=0.0001
+
+
+
 
 # Appendix of ref. [1]. First table
 # Specific volume of saturated ice:
