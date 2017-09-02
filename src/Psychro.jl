@@ -45,12 +45,12 @@ struct Entropy <: ThermodynamicProperty end
 struct Temperature <: ThermodynamicProperty end
 struct Pressure <: ThermodynamicProperty end
 struct Density <: ThermodynamicProperty end
-struct MolarFraction <: ThermodynamicProperty end
-struct MassFraction <: ThermodynamicProperty end
+struct MolFrac <: ThermodynamicProperty end
+struct MassFrac <: ThermodynamicProperty end
 struct WetBulb <: ThermodynamicProperty end
 struct DewPoint <: ThermodynamicProperty end
-struct HumidityRatio <: ThermodynamicProperty end
-struct RelativeHumidity <: ThermodynamicProperty end
+struct HumRat <: ThermodynamicProperty end
+struct RelHum <: ThermodynamicProperty end
 
 
 # package code goes here

@@ -640,6 +640,7 @@ end
 "Coefficients g_i to calculate enthalpy of moist air ref[2]"
 const g = (0.34373874e2, 0.52863609e-2, -0.15608795e-4,
            0.24880547e-7, -0.12230416e-10, 0.28709015e2)
+"Coefficients k_i to calculate enthalpy of moist air ref[2]"
 const k = (0.2196603e1, 0.19743819e-1, -0.70128225e-4,
            0.14866252e-6, -0.14524437e-9, 0.55663583e-13,
            0.32284652e2)
@@ -673,75 +674,6 @@ function entropymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
     return (xa*h1 + xv*h2 + h3 + h4) / (xa*Ma)
 end
 
-
-
-function Ashrae(ch::Char, T, humidity, P)
-    a = Ashrae()
-    ch = uppercase(ch)
-    if ch == 'X'
-        xv = humidity
-        xsv = e_factor(T, P) * Pws(T) / P
-        w = Mv/Ma * xv/(1.0 - xv)
-    elseif ch == 'W'
-        w = humidity
-        xv = w / (Mv/Ma + w)
-        xsv = e_factor(T,P) * Pws(T) / P
-    elseif ch == 'R'
-        rel = humidity
-        xv = rel * e_factor(T, P) * Pws(T) / P
-        w = Mv/Ma * xv/(1.0 - xv)
-    elseif ch == 'D'
-        D = humidity
-        xv = e_factor(D,P) * Pws(D) / P
-    elseif ch == 'B'
-
-        B = humidity
-        w = calc_W_from_B(T, B, P)
-        xv = w / (Mv/Ma + w)
-    elseif ch=='D'
-        D = humidity
-
-        xv = e_factor(D,P) * Pws(D) / P
-        w = Mv/Ma * xv/(1.0 - xv)
-
-    end
-
-    return Ashrae(xv)
-    
-        
-        
-end
-
-
-function calc_W_from_B(T, B, P)
-
-    NMAX = 100
-    xsv = e_factor(B,P) * Pws(B) / P
-    w2 = Mv/Ma * xsv/(1-xsv)
-
-    EPS = 1e-8*w2
-    w = (h_a_(B) - h_a_(T) - w2*(h_f_(B) + h_v_(B))) / (h_v(T) - h_f_(B))
-    for iter = 1:NMAX
-        f = aux_WB(w, T, B, P)
-        df = (aux_WB(w+1e-5*w2, T, B, P) - f) / (1e-5*w2)
-        dw = -f/df
-        w = w + dw
-
-        if abs(dw) < EPS
-            return w
-        end
-
-    end
-
-    return w
-end
-
-function aux_WB(w, T, B, P)
-    xv1 = w / (Mv/Ma+w)
-    xv2 = e_factor(B, P) * Pws(B) / P
-    w2 = Mv / Ma * xv2 / (1.0-xv2)
-    (1.0+w)*h_(T,P,xv1) + (w2-w)*h_f_(B) - (1.0+w2)*h_(B,P,xv2)
-end
 
 
     
