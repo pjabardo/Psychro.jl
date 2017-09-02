@@ -637,6 +637,13 @@ end
 
 
 
+"Coefficients g_i to calculate enthalpy of moist air ref[2]"
+const g = (0.34373874e2, 0.52863609e-2, -0.15608795e-4,
+           0.24880547e-7, -0.12230416e-10, 0.28709015e2)
+const k = (0.2196603e1, 0.19743819e-1, -0.70128225e-4,
+           0.14866252e-6, -0.14524437e-9, 0.55663583e-13,
+           0.32284652e2)
+
 
 """
     entropymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
@@ -654,7 +661,16 @@ dry air.
 """
 function entropymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
     xa = 1.0-xv
+    h1 =  @polyeval(Tk, g, 5) + g[6]*log(Tk) - 196.125465
+    h2 =  @polyeval(Tk, k, 6) + k[7]*log(Tk) - 63.31449
 
+    z = Zmoist(Tk, P, xv, EPS, MAXITER)
+    vm = z*R*Tk/P
+    h3 = -R * log(P / 101325.0) + xa*R*log(z/xa) + xv*R*log(z/xv) 
+    h4 = -R/vm * (  (Bm(Tk, xv) + Tk*dBm(Tk,xv)) + 0.5/vm*(Cm(Tk, xv) + Tk*dCm(Tk, xv)) )
+    
+
+    return (xa*h1 + xv*h2 + h3 + h4) / (xa*Ma)
 end
 
 

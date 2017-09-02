@@ -203,6 +203,41 @@ P = 5e6
 @test   672.0 ≈ hmoist(453.15, P) atol=1.0
 @test   1113.0 ≈ hmoist(473.15, P) atol=1.0
 
+# Entropy of saturated moist air
+# Table 4 in the appendix of reference [2].
+smoist(Tk, P) = Psychro.entropymoist(Tk, P, Psychro.efactor(Tk,P)*Psychro.Pws(Tk)/P)/1000
+P = 0.1e6
+@test  -0.45499 ≈ smoist(173.15, P) atol=0.00003
+@test   0.04070 ≈ smoist(273.15, P) atol=0.00003
+@test  11.7287 ≈ smoist(363.15, P) atol=0.0005
+
+P = 0.5e6
+@test  -0.92718 ≈ smoist(173.15, P) atol=0.00005
+@test  -0.45417 ≈ smoist(273.15, P) atol=0.00005
+@test   0.64517 ≈ smoist(363.15, P) atol=0.0005
+@test   1.1102 ≈ smoist(373.15, P) atol=0.0005
+@test  90.01 ≈ smoist(423.15, P) atol=0.05
+
+P = 1e6
+@test  -1.13929 ≈ smoist(173.15, P) atol=0.00005 # In the table the signal is +
+@test  -0.66104 ≈ smoist(273.15, P) atol=0.00005
+@test   0.00805 ≈ smoist(363.15, P) atol=0.00005
+@test   0.21676 ≈ smoist(373.15, P) atol=0.0005
+@test   4.0478  ≈ smoist(423.15, P) atol=0.0005
+@test   7.3103  ≈ smoist(433.15, P) atol=0.0005
+@test   17.221  ≈ smoist(443.15, P) atol=0.005
+
+P = 5e6
+@test  -1.72380 ≈ smoist(173.15, P) atol=0.0001 # In the table the signal is +
+@test  -1.15924 ≈ smoist(273.15, P) atol=0.00005
+@test  -0.77519 ≈ smoist(363.15, P) atol=0.00005
+@test  -0.71331 ≈ smoist(373.15, P) atol=0.00005
+@test  -0.1629  ≈ smoist(423.15, P) atol=0.0002
+@test   0.0364  ≈ smoist(433.15, P) atol=0.0002
+@test   0.2901  ≈ smoist(443.15, P) atol=0.0002
+@test   0.6185  ≈ smoist(453.15, P) atol=0.0002
+@test   1.642  ≈ smoist(473.15, P) atol=0.002
+
 
 # Appendix of ref. [1]. First table
 # Specific volume of saturated ice:
