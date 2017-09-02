@@ -204,7 +204,7 @@ Specific entropy of dry air. Equation 14 of reference [2]
 """
 function entropyair(Tk, P, EPS=1e-8, MAXITER=100)
 
-    s1 = @evalpoly2(Tk, ℓ, 5) + ℓ[6]*log(Tk) - R*log(P/101325.0)
+    s1 = @polyeval(Tk, ℓ, 5) + ℓ[6]*log(Tk) - R*log(P/101325.0)
     va = molarvolair(Tk, P, EPS, MAXITER)
     s2 = R*log(P*va/R/Tk) - R/va * ( (Baa(Tk) + Tk*dBaa(Tk)) + 0.5/va * (Caaa(Tk) + Tk*dCaaa(Tk)))
 
@@ -557,13 +557,14 @@ molarvolmoist(Tk, P, xv, EPS=1e-8, MAXITER=100) = Zmoist(Tk, P, xv, EPS, MAXITER
 """
     ```volumemoist```
 
-Molar volume of moist air given the molar fraction of water vapor.
-Assumes a real gas.
+Specific volume of moist air given the molar fraction of water vapor.
+Assumes a real gas. The specific volume is defined as the volume occupied
+by a mixture of dry air and water vapor per kg of dry air.
 
  * `Tk` Temperature in K
  * `P` Pressure in Pa
  * `xv`  Molar fraction of water vapor
- * Output: molar volume in m^3/mol
+ * Output: molar volume in m^3/kg of dry air.
 """
 volumemoist(Tk, P, xv, EPS=1e-8, MAXITER=100) = molarvolmoist(Tk,P,xv,EPS,MAXITER) / (Ma*(1-xv))
 
@@ -604,27 +605,57 @@ function Zmoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
     return z
 end
 
-
+"Coefficients a_i to calculate enthalpy of moist air ref[2]"
 const a = (0.63290874e1, 0.28709015e2, 0.26431805e-2,
            -0.10405863e-4, 0.18660410e-7, -0.97843331e-11)
+"Coefficients d_i to calculate enthalpy of moist air ref[2]"
 const d = (-0.5008e-2, 0.32491829e2, 0.65576345e-2,
            -0.26442147e-4, 0.51751789e-7, -0.31541624e-10)
 """
     enthalpymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
 
-Specific enthalphy of moist air.
+Specific enthalphy of moist air defined as enthalpy per kg of
+dry air.
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `xv` molar fraction of water vapor.
+ * `EPS`: Acceptable error
+ * `MAXITER`: Maixmum number of iterations
+ * Output: J/kg of dry air
 
 """
 function enthalpymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
     xa = 1.0-xv
-    h1 = xa*(@evalpoly2(Tk, a, 6) -7914.1982)
-    h2 = xv*(@evalpoly2(Tk, d, 6) + 35994.17)
+    h1 = xa*(@polyeval(Tk, a, 6) -7914.1982)
+    h2 = xv*(@polyeval(Tk, d, 6) + 35994.17)
     vm = molarvolmoist(Tk, P, xv, EPS, MAXITER)
     h3 = R*Tk/vm * (Bm(Tk, xv) - Tk*dBm(Tk,xv)
                     + 1/vm*( Cm(Tk,xv) - 0.5*Tk*dCm(Tk,xv) ) )
     return (h1 + h2 + h3) / (xa*Ma)
 end
 
+
+
+
+"""
+    entropymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
+
+Specific entropy of moist air defined as entropy per kg of
+dry air.
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `xv` molar fraction of water vapor.
+ * `EPS`: Acceptable error
+ * `MAXITER`: Maixmum number of iterations
+ * Output: J/kg/K of dry air
+
+"""
+function entropymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
+    xa = 1.0-xv
+
+end
 
 
 

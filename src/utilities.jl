@@ -1,5 +1,5 @@
 """
-    @evalpoly2(z, p, N)
+    @polyeval(z, p, N)
 
 Evaluate the polynomial ``\\sum_k c[k] z^{k-1}`` for the coefficients `c[1]`, `c[2]`, ..., `c[N]`;
 that is, the coefficients are given in ascending order by power of `z`.  This macro expands
@@ -15,12 +15,12 @@ julia> p = randn(5)
  -0.87642  
   0.260407 
 
-julia> @evalpoly2(0.5, p, 5)
+julia> @polyeval(0.5, p, 5)
 -0.020427265391245605
 
 ```
 """
-macro evalpoly2(x, p, N)
+macro polyeval(x, p, N)
     if N==1
         return :($(esc(p))[1])
     elseif N==2
