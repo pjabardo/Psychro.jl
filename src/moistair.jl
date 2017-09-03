@@ -19,7 +19,8 @@ molarvolume(::Type{Vapor}, Tk) = molarvolvapor(Tk)
 density(::Type{Vapor}, Tk) = 1/volumevapor(Tk)
 enthalpy(::Type{Vapor}, Tk) = enthalpyvapor(Tk)
 molarenthalpy(::Type{Vapor}, Tk) = enthalpyvapor(Tk)*Mv
-
+molarentropy(::Type{Vapor}, Tk) = molarentropyvapor(Tk)
+entropy(::Type{Vapor}, Tk) = entropyvapor(Tk)
 compressfactor(::Type{Vapor}, Tk) = Zvapor(Tk)
 
 
