@@ -30,7 +30,7 @@ compressfactor(::Type{Vapor}, Tk) = Zvapor(Tk)
 Calculates the molarfraction of water vapor given a humidity parameter.
 The humidity parameter can be one of the following:
 
- * `MolFrac` - Identity function basically...
+ * `MolarFrac` - Identity function basically...
  * `RelHum` - Relative humidity in decimal notation (not percentage!)
  * `DewPoint`- Dew point temperature in K
  * `HumRat` - Humidity ration, kg of vapor / kg of dry air
@@ -45,12 +45,16 @@ The parameters used by this function are:
  * The value of the humidity parameter. 
  * P - Pressure in Pa
 """
-function molarfrac(Tk, ::Type{MolFrac}, xv, P)
+function molarfrac(Tk, ::Type{MolarFrac}, xv, P)
     xv
 end
 
 function molarfrac(Tk, ::Type{HumRat}, w, P)
     w  / (Mv/Ma + w)
+end
+
+function molarfrac(Tk, ::Type{MassFrac}, r, P)
+    r * Ma / (Mv + r*(Ma - Mv))
 end
 
 function molarfrac(Tk, ::Type{RelHum}, rel, P)
@@ -109,34 +113,106 @@ function compressfactor(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:Psychro
     Zmoist(Tk, P, xv)
 end
 
+function calcdewpoint(Tk, P, xv, EPS=1e-9, MAXITER=100)
+    # Use Ideal Gas to 
+    D = Tws(xv*P)
+    Dnew = D
 
-
-function calc_W_from_B(Tk, B, P, EPS=1e-8, MAXITER=100)
-
-    xsv = efactor(B,P) * Pws(B) / P
-    w2 = Mv/Ma * xsv/(1-xsv)
-
-    w = (h_a_(B) - h_a_(T) - w2*(h_f_(B) + h_v_(B))) / (h_v(T) - h_f_(B))
-    for iter = 1:MAXITER
-        f = aux_WB(w, T, B, P)
-        df = (aux_WB(w+1e-5*w2, T, B, P) - f) / (1e-5*w2)
-        dw = -f/df
-        w = w + dw
-
-        if abs(dw) < EPS
-            return w
+    for i = 1:MAXITER
+        f = efactor(D, P)
+        Dnew = Tws(xv*P/f)
+        if abs(D-Dnew) < EPS
+            return Dnew
         end
-
+        D = Dnew
     end
-
-    return w
+    return Dnew
 end
 
-function aux_WB(w, T, B, P)
-    xv1 = w / (Mv/Ma+w)
-    xv2 = e_factor(B, P) * Pws(B) / P
-    w2 = Mv / Ma * xv2 / (1.0-xv2)
-    (1.0+w)*h_(T,P,xv1) + (w2-w)*h_f_(B) - (1.0+w2)*h_(B,P,xv2)
+function dewpoint(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    if T==DewPoint
+        return y
+    end
+    
+    xv = molarfrac(Tk, T, y, P)
+    D = calcdewpoint(Tk, P, xv)
+    return D
+end
+
+
+function relhum(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    if T==RelHum
+        return y
+    end
+    
+    xv = molarfrac(Tk, T, y, P)
+    xv * P / (efactor(Tk, P) * Pws(Tk))
+end
+
+
+
+function calcwetbulb(Tk, P, xv, EPS=1e-8, MAXITER=200)
+
+    w = humrat(xv)
+
+    B = Tk - 1.0 # Initial guess
+    h = 1e-7
+    for i = 1:MAXITER
+        f = aux_WB(w, Tk, B, P)
+        df = (aux_WB(w, Tk, B + h, P) - f) / h
+        dB = -f/df
+        B = B + dB
+
+        if abs(dB) < EPS
+            return B
+        end
+    end
+
+    return B  # Later on I will have to check covergence.
+      
+end
+
+
+function wetbulb(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    if T==WetBulb
+        return y
+    end
+    xv = molarfrac(Tk, T, y, P)
+
+    B = calcwetbulb(Tk, P, xv)
+    return B
+    
+end
+
+
+
+humrat(xv) = xv / (1-xv) * (Mv/Ma)
+function humrat(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    if T==HumRat
+        return y
+    end
+    
+    xv = molarfrac(Tk, T, y, P)
+    return humrat(xv)
+end
+
+function molarfrac(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    if T==MolarFrac
+        return y
+    end
+    
+    xv = molarfrac(Tk, T, y, P)
+    return xv
+end
+
+
+function massfrac(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    if T==MassFrac
+        return y
+    end
+    xv = molarfrac(Tk, T, y, P)
+    return xv*Mv / ( (1-xv)*Ma + xv*Mv )
+    
 end
 
 

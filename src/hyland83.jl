@@ -90,7 +90,22 @@ function enthalpywater(Tk)
 end
 
 
+"""
+    enthalpywi(Tk)
 
+Specific enthalpy of saturated water in condensed phase (ice or water).
+
+ * `Tk` Temperature in K
+ * Output: J/kg
+
+"""
+function enthalpywi(Tk)
+    if Tk >= 273.15
+        return enthalpywater(Tk)
+    else
+        return enthalpyice(Tk)
+    end
+end
 
 
 

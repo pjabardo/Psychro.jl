@@ -15,6 +15,7 @@ in the articles listed below.
  * [3] Himmelblaum D. M., "Solubilities of inert gases in water, 0oC to near the critical point of water", Journal of Chemical and Engineering Data, Vol. 5, No. 1, January 1960.
  * [4] Kell, George S., "Density, thermal expansivity, and compressibility of liquid water from 0oC to 150oC: correlations and tables for atmospheric pressure and saturation reviewed and expressed on 1968 temperature scale", Journal of Chemical and Engineering Data, Vol. 20, No. 1, 1975.
 """
+
 module Psychro
 
 "Molecular weight of air in kg/mol"
@@ -47,7 +48,7 @@ struct Temperature <: ThermodynamicProperty end
 struct Pressure <: ThermodynamicProperty end
 struct Density <: ThermodynamicProperty end
 
-struct MolFrac <: PsychroProperty end
+struct MolarFrac <: PsychroProperty end
 struct MassFrac <: PsychroProperty end
 struct WetBulb <: PsychroProperty end
 struct DewPoint <: PsychroProperty end
@@ -59,5 +60,14 @@ struct RelHum <: PsychroProperty end
 include("utilities.jl")
 include("hyland83.jl")
 include("hyland83a.jl")
+include("wetbulb.jl")
 include("moistair.jl")
+
+export volume, molarvolume, density, enthalpy, molarenthalpy, entropy, molarentropy, compressfactor
+export dewpoint, relhum, humrat, wetbulb, molarfrac, massfrac
+export DryAir, Vapor, MoistAir
+export Volume, Enthalpy, Entropy, Temperature, Pressure, Density
+export MolarFrac, MassFrac, WetBulb, DewPoint, HumRat, RelHum
+
+
 end # module
