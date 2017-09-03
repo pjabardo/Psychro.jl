@@ -49,11 +49,14 @@ struct Pressure <: ThermodynamicProperty end
 struct Density <: ThermodynamicProperty end
 
 struct MolarFrac <: PsychroProperty end
-struct MassFrac <: PsychroProperty end
+
+"Specific Humidity mv / (ma+mv)"
+struct SpecHum <: PsychroProperty end
 struct WetBulb <: PsychroProperty end
 struct DewPoint <: PsychroProperty end
 struct HumRat <: PsychroProperty end
 struct RelHum <: PsychroProperty end
+
 
 
 # package code goes here
@@ -65,10 +68,10 @@ include("psychrounits.jl")
 include("moistair.jl")
 
 export volume, molarvolume, density, enthalpy, molarenthalpy, entropy, molarentropy, compressfactor
-export dewpoint, relhum, humrat, wetbulb, molarfrac, massfrac
+export dewpoint, relhum, humrat, wetbulb, molarfrac, spechum
 export DryAir, Vapor, MoistAir
 export Volume, Enthalpy, Entropy, Temperature, Pressure, Density
-export MolarFrac, MassFrac, WetBulb, DewPoint, HumRat, RelHum
+export MolarFrac, SpecHum, WetBulb, DewPoint, HumRat, RelHum
 
 
 end # module

@@ -106,7 +106,7 @@ The humidity parameter can be one of the following:
  * `RelHum` - Relative humidity in decimal notation (not percentage!)
  * `DewPoint`- Dew point temperature in K
  * `HumRat` - Humidity ration, kg of vapor / kg of dry air
- * `MassFrac` - Mass fraction of water vapor = mv / (mv + ma)
+ * `SpecHum` - Specific Humidity of water vapor = mv / (mv + ma)
  * `WetBulb` - Wet bulb temperature in K- estimated by the adiabatic saturation temperature.
  
 As usual all calculations are performed using plain SI units. 
@@ -125,8 +125,8 @@ function molarfrac(Tk, ::Type{HumRat}, w, P)
     w  / (Mv/Ma + w)
 end
 
-function molarfrac(Tk, ::Type{MassFrac}, r, P)
-    r * Ma / (Mv + r*(Ma - Mv))
+function molarfrac(Tk, ::Type{SpecHum}, q, P)
+    q * Ma / (Mv + r*(Ma - Mv))
 end
 
 function molarfrac(Tk, ::Type{RelHum}, rel, P)
@@ -300,11 +300,11 @@ function molarfrac(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroPrope
 end
 
 
-function massfrac(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+function spechum(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15 K!"
     @assert 0 <= P < 5e6 "Out of range error: Pressure should be below 5×10⁶ Pa"
 
-    if T==MassFrac
+    if T==SpecHum
         return y
     end
     xv = molarfrac(Tk, T, y, P)
