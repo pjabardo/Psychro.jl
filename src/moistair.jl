@@ -2,6 +2,27 @@
 This file actually implements the user interface of the Psychro library.
 =#
 
+
+
+volume(::Type{DryAir}, Tk, P) = volumeair(Tk, P)
+molarvolume(::Type{DryAir}, Tk, P) = molarvolumeair(Tk, P)
+density(::Type{DryAir}, Tk, P) = 1.0/volumeair(Tk, P)
+enthalpy(::Type{DryAir}, Tk, P) = enthalpyair(Tk, P)
+molarenthalpy(::Type{DryAir}, Tk, P) = molarenthalpyair(Tk, P)
+entropy(::Type{DryAir}, Tk, P) = entropyair(Tk, P)
+molarentropy(::Type{DryAir}, Tk, P) = molarentropyair(Tk, P)
+compressfactor(::Type{DryAir}, Tk, P) = P*molarvolumeair(Tk, P) / (R*Tk)
+
+
+volume(::Type{Vapor}, Tk) = volumevapor(Tk)
+molarvolume(::Type{Vapor}, Tk) = molarvolvapor(Tk)
+density(::Type{Vapor}, Tk) = 1/volumevapor(Tk)
+enthalpy(::Type{Vapor}, Tk) = enthalpyvapor(Tk)
+molarenthalpy(::Type{Vapor}, Tk) = enthalpyvapor(Tk)*Mv
+
+compressfactor(::Type{Vapor}, Tk) = Zvapor(Tk)
+
+
 """
     molarfrac(Tk, HumidityType, x, P)
 
@@ -44,6 +65,48 @@ function molarfrac(Tk, ::Type{WetBulb}, B, P)
     w / (Mv/Ma + w)
 end
 
+function volume(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    xv = molarfrac(Tk, T, y, P)
+    volumemoist(Tk, P, xv)
+end
+
+function molarvolume(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    xv = molarfrac(Tk, T, y, P)
+    molarvolumemoist(Tk, P, xv)
+end
+
+function density(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    xv = molarfrac(Tk, T, y, P)
+    M = xv*Mv + (1-xv)*Ma
+    vm = molarvolumemoist(Tk, P, xv)
+    return M/vm
+end
+
+
+function enthalpy(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    xv = molarfrac(Tk, T, y, P)
+    enthalpymoist(Tk, P, xv)
+end
+
+function molarenthalpy(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    xv = molarfrac(Tk, T, y, P)
+    molarenthalpymoist(Tk, P, xv)
+end
+
+function entropy(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    xv = molarfrac(Tk, T, y, P)
+    entropymoist(Tk, P, xv)
+end
+
+function molarentropy(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    xv = molarfrac(Tk, T, y, P)
+    molarentropymoist(Tk, P, xv)
+end
+
+function compressfactor(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+    xv = molarfrac(Tk, T, y, P)
+    Zmoist(Tk, P, xv)
+end
 
 
 

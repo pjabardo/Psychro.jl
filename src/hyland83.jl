@@ -328,6 +328,18 @@ function molarvolvapor(Tk)
 end
 
 """
+    Zvapor(Tk)
+
+Compressibility factor of saturated vapor. Eq. 21 reference [1].
+
+ * `Tk` Temperature in K
+ * Output: m^3/mol
+"""
+function Zvapor(Tk)
+    (1.0 + p*(Blin(Tk)  + p*Clin(Tk)))
+end
+
+"""
     volumevapor(Tk)
 
 Specific volume of saturated vapor. Eq. 21 reference [1].
@@ -341,4 +353,35 @@ function volumevapor(Tk)
     return R*Tk/p * (1.0 + p*(Blin(Tk)  + p*Clin(Tk))) / Mv
 end
 
+const ww = (1.92703e3, 0.10959485e1, -0.3892708e-2,
+            0.82520238e-5, -0.80622878e-8,
+            0.30897984e-11, 1.7920705e3)
+
+
+"""
+    molarentropyvapor(Tk)
+
+Molar entropy of saturated vapor. Eq. 20 reference [1].
+
+ * `Tk` Temperature in K
+ * Output: J/mol/K
+"""
+function molarentropyvapor(Tk)
+    p = Pws(Tk)
+    s1 = @polyeval(Tk, ww, 6) + ww[7]*log(Tk)
+    s2 = -R*log(p) - R*p * ( (Blin(Tk) + Tk*dBlin(Tk)) + p/2 * (Clin(Tk) + Tk*dClin(Tk)) )
+
+    return s1*Mv + s2
+end
+
+
+"""
+    entropyvapor(Tk)
+
+Specific entropy of saturated vapor. Eq. 20 reference [1].
+
+ * `Tk` Temperature in K
+ * Output: J/kg/K
+"""
+entropyvapor(Tk) = molarentropyvapor(Tk) / Mv
 

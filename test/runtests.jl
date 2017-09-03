@@ -358,3 +358,13 @@ P = 5.0e6
 @test 1.2722e-1 ≈ Psychro.volumevapor(473.15) atol=0.0001e0
 
 
+# Specific entropy of saturated water vapor
+# First table of the appendix of ref. [1]
+@test 14.30387 ≈ Psychro.entropyvapor(173.15)/1000 atol=0.00005
+@test 11.10965 ≈ Psychro.entropyvapor(223.15)/1000 atol=0.00005
+@test  9.15510 ≈ Psychro.entropyvapor(273.16)/1000 atol=0.00005
+@test  8.07477 ≈ Psychro.entropyvapor(323.15)/1000 atol=0.00005
+@test  7.35365 ≈ Psychro.entropyvapor(373.15)/1000 atol=0.00005
+@test  6.83731 ≈ Psychro.entropyvapor(423.15)/1000 atol=0.00005
+@test  6.43218 ≈ Psychro.entropyvapor(473.15)/1000 atol=0.00005
+

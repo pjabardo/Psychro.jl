@@ -38,6 +38,7 @@ struct MoistAir <: AbstractFluid end
 
 
 abstract type ThermodynamicProperty end
+abstract type PsychroProperty end
 
 struct Volume <: ThermodynamicProperty end
 struct Enthalpy <: ThermodynamicProperty end
@@ -45,16 +46,18 @@ struct Entropy <: ThermodynamicProperty end
 struct Temperature <: ThermodynamicProperty end
 struct Pressure <: ThermodynamicProperty end
 struct Density <: ThermodynamicProperty end
-struct MolFrac <: ThermodynamicProperty end
-struct MassFrac <: ThermodynamicProperty end
-struct WetBulb <: ThermodynamicProperty end
-struct DewPoint <: ThermodynamicProperty end
-struct HumRat <: ThermodynamicProperty end
-struct RelHum <: ThermodynamicProperty end
+
+struct MolFrac <: PsychroProperty end
+struct MassFrac <: PsychroProperty end
+struct WetBulb <: PsychroProperty end
+struct DewPoint <: PsychroProperty end
+struct HumRat <: PsychroProperty end
+struct RelHum <: PsychroProperty end
 
 
 # package code goes here
 include("utilities.jl")
 include("hyland83.jl")
 include("hyland83a.jl")
+include("moistair.jl")
 end # module
