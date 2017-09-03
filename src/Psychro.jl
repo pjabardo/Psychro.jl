@@ -61,6 +61,7 @@ include("utilities.jl")
 include("hyland83.jl")
 include("hyland83a.jl")
 include("wetbulb.jl")
+include("psychrounits.jl")
 include("moistair.jl")
 
 export volume, molarvolume, density, enthalpy, molarenthalpy, entropy, molarentropy, compressfactor
