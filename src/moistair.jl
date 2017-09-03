@@ -213,15 +213,18 @@ function calcdewpoint(Tk, P, xv, EPS=1e-9, MAXITER=100)
     # Use Ideal Gas to 
     D = Tws(xv*P)
     Dnew = D
-
+    i = 0
+    err = 0.0
     for i = 1:MAXITER
         f = efactor(D, P)
         Dnew = Tws(xv*P/f)
-        if abs(D-Dnew) < EPS
+        err = abs(D-Dnew)
+        if err < EPS
             return Dnew
         end
         D = Dnew
     end
+    throw(ConvergenceError("Dew point calculation failed to converge!", D, i, err))
     return Dnew
 end
 
@@ -253,26 +256,6 @@ end
 
 
 
-function calcwetbulb(Tk, P, xv, EPS=1e-8, MAXITER=200)
-
-    w = humrat(xv)
-
-    B = Tk - 1.0 # Initial guess
-    h = 1e-7
-    for i = 1:MAXITER
-        f = aux_WB(w, Tk, B, P)
-        df = (aux_WB(w, Tk, B + h, P) - f) / h
-        dB = -f/df
-        B = B + dB
-
-        if abs(dB) < EPS
-            return B
-        end
-    end
-
-    return B  # Later on I will have to check covergence.
-      
-end
 
 
 function wetbulb(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}

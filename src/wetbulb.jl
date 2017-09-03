@@ -48,3 +48,25 @@ function aux_WB(w, Tk, B, P)
     enthalpymoist(Tk,P,xv1) + (w2-w)*enthalpywi(B) - enthalpymoist(B,P,xv2)
 end
 
+function calcwetbulb(Tk, P, xv, EPS=1e-8, MAXITER=200)
+
+    w = humrat(xv)
+
+    B = Tk - 1.0 # Initial guess
+    h = 1e-7
+    i = 0
+    dB = 0.0
+    for i = 1:MAXITER
+        f = aux_WB(w, Tk, B, P)
+        df = (aux_WB(w, Tk, B + h, P) - f) / h
+        dB = -f/df
+        B = B + dB
+
+        if abs(dB) < EPS
+            return B
+        end
+    end
+    throw(ConvergenceError("Wet Bulb temperature failed to converge!", B, i, dB))
+    return B  # Later on I will have to check covergence.
+      
+end

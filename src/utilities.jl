@@ -35,3 +35,21 @@ macro polyeval(x, p, N)
     return ex
 end
 
+"""
+    ConvergenceError([msg, val, niter, err])
+
+Exception that is to be thrown when an iterative procedure fails
+to converge.
+
+"""
+mutable struct ConvergenceError <: Exception
+    msg::String
+    val::Float64
+    niter::Int
+    err::Float64
+    ConvergenceError() = new("Calculations failed to converge", NaN, -1, NaN)
+    ConvergenceError(msg) = new(msg, NaN, -1, NaN)
+    ConvergenceError(msg, val) = new(msg, val, -1, NaN)
+    ConvergenceError(msg, val, niter) = new(msg, val, niter, NaN)
+    ConvergenceError(msg, val, niter, err) = new(msg, val, niter, err)
+end

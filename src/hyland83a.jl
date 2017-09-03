@@ -128,22 +128,22 @@ function molarvolumeair(Tk, P, EPS=1e-8, MAXITER=100)
     RT=R*Tk
     va = RT/P
 
-    conv = false
     b = Baa(Tk)
     c = Caaa(Tk)
     z0 = 1.0
     z=1.0
-    niter = 0
+    err = 0.0
+    i = 0
     for i = 1:MAXITER
         z = 1.0 + 1/va*(b + c/va)
         va = RT*z/P
-        if abs(z-z0) < EPS
-            conv = true
-            niter = i
-            break
+        err = abs(z-z0)
+        if err < EPS
+            return va
         end
         z0 = z
     end
+    throw(ConvergenceError("Molarvolume failed to converge", va, i, err))
     return va
 end
 
@@ -323,26 +323,29 @@ in equation 18 [2]
 
 
 """
-function efactor(Tk, P)
+function efactor(Tk, P, EPS=1e-8, MAXITER=200)
     f = 1.0
-    EPS = 1e-7
-    NMAX = 100
-    for iter = 1:NMAX
+    i = 0
+    err = 0.0
+    for i = 1:MAXITER
         xas = (P-f*Pws(Tk)) / P
         fnovo = exp(lnf(Tk,P,xas))
-
-        if abs(fnovo - 1.0) < EPS
+        err = abs(fnovo-f)
+        
+        if err < EPS
             if fnovo < 1
                 fnovo = 1.0
             end
-            fnovo = 1.0
+            return fnovo
         end
-
+        
         f = fnovo
     end
     if fnovo < 1.0
         fnovo = 1.0
     end
+
+    throw(ConvergenceError("Enhancement factor calculation did not converge!", fnovo, i, err))
     fnovo
 end
 
@@ -625,19 +628,20 @@ function Zmoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
     c = Cm(Tk, xv)
     z0 = 1.0
     z = 1.0
-    conv = false
-    for iter = 1:MAXITER
+    err = 0.0
+    i = 0
+    for i = 1:MAXITER
         z = 1 + 1/vm * (b + c/vm)
 
         vm = z*RT/P
-
-        if abs(z-z0) < EPS
-            conv = true
-            break
+        err = abs(z-z0)
+        if err < EPS
+            return z
         end
         z0 = z
     end
     # Still need to check convergence.
+    throw("Compressibility factor for moist air failed to converge properly!", z, i, err)
     return z
 end
 

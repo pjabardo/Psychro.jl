@@ -281,14 +281,15 @@ iteration is used to obtain more accurate data.
  * Output: Saturation temperature in K.
 """
 function Tws(P)
+    EPS=1e-8
+    MAXITER=200
 
     lnP = log(P)
     T = hh[1] + lnP * (hh[2] + lnP*(hh[3] + lnP*(hh[4] + lnP*hh[5]))) + hh[6] * P
 
-    NMAX = 100
-    EPS = 1e-11
-
-    for i = 0:NMAX
+    i = 0
+    dT = 0.0
+    for i = 0:MAXITER
         f = P - Pws(T)
         df = -dPws(T)
         dT = -f / df
@@ -298,7 +299,7 @@ function Tws(P)
             return T
         end
     end
-
+    throw(ConvergenceError("Calculation of saturation temperature failed to converge!", T, i, dT))
     return T
 end
 
