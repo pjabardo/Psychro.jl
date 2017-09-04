@@ -130,11 +130,11 @@ function molarfrac(Tk, ::Type{SpecHum}, q, P)
 end
 
 function molarfrac(Tk, ::Type{RelHum}, rel, P)
-    xv = rel * efactor(Tk, P) * Pws(Tk) / P
+    rel * efactor(Tk, P) * Pws(Tk) / P
 end
 
 function molarfrac(Tk, ::Type{DewPoint}, D, P)
-    xv = efactor(D,P) * Pws(D) / P
+    efactor(D,P) * Pws(D) / P
 end
 
 function molarfrac(Tk, ::Type{WetBulb}, B, P)
@@ -142,10 +142,10 @@ function molarfrac(Tk, ::Type{WetBulb}, B, P)
     w / (Mv/Ma + w)
 end
 
+
 function volume(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15! K"
     @assert 0 <= P < 5e6 "Out of range error: Pressure should be below 5×10⁶ Pa"
-
     xv = molarfrac(Tk, T, y, P)
     volumemoist(Tk, P, xv)
 end
