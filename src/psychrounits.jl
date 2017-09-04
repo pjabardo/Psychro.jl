@@ -80,7 +80,7 @@ function molarfrac(Tk::Quantity, ::Type{SpecHum}, q::Number, P::Quantity)
     q * Ma / (Mv + r*(Ma - Mv))
 end
 
-function molarfrac(Tk::Quantity, ::Type{RelHum}, rel::Number, P::Quantity)
+function molarfrac(Tk::Quantity, ::Type{RelHum}, rel, P::Quantity)
     molarfrac(uconvert(u"K", Tk).val, RelHum, rel, uconvert(u"Pa", P).val)
 end
 
@@ -93,7 +93,7 @@ function molarfrac(Tk::Quantity, ::Type{WetBulb}, B::Quantity, P::Quantity)
 end
 
 function volume(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     volume(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"m^3/kg"
@@ -101,42 +101,42 @@ end
 
 
 function molarvolume(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                     ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     molarvolume(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"m^3/mol"
 end
 
 function density(::Type{MoistAir}, Tk::Quantity,
-                 ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                 ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     density(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"kg/m^3"
 end
 
 function enthalpy(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                  ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     enthalpy(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"J/kg"
 end
 
 function molarenthalpy(::Type{MoistAir}, Tk::Quantity,
-                       ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                       ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     molarenthalpy(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"J/mol"
 end
 
 function entroppy(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     entropy(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"J/kg/K"
 end
 
 function molarentroppy(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     molarentropy(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"J/mol/K"
@@ -153,7 +153,7 @@ end
 
 
 function dewpoint(::Type{MoistAir}, Tk::Quantity,
-                  ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                  ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     dewpoint(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"K"
@@ -161,7 +161,7 @@ end
 
 
 function relhum(::Type{MoistAir}, Tk::Quantity,
-                  ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     relhum(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)
@@ -169,27 +169,27 @@ end
 
 
 function wetbulb(::Type{MoistAir}, Tk::Quantity,
-                  ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                 ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     wetbulb(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"K"
 end
 
 function humrat(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     humrat(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)
 end
 
 function molarfrac(::Type{MoistAir}, Tk::Quantity,
-                   ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                   ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     molarfrac(Tk, T, y, P)
 end
 
 function spechum(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     spechum(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)
