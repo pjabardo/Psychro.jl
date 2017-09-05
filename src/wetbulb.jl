@@ -17,7 +17,6 @@ function calc_W_from_B(Tk, B, P, EPS=1e-8, MAXITER=100)
         df = (aux_WB(w+1e-4*w2, Tk, B, P, pws, efac) - f) / (1e-4*w2)
         dw = -f/df
         w = w + dw
-        println(dw)
 
         if abs(dw) < EPS*w2
             return w

@@ -352,6 +352,7 @@ Compressibility factor of saturated vapor. Eq. 21 reference [1].
  * Output: m^3/mol
 """
 function Zvapor(Tk)
+    p = Pws(Tk)
     (1.0 + p*(Blin(Tk)  + p*Clin(Tk)))
 end
 

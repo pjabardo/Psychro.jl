@@ -67,7 +67,7 @@ include("wetbulb.jl")
 include("psychrounits.jl")
 include("moistair.jl")
 
-export volume, molarvolume, density, enthalpy, molarenthalpy, entropy, molarentropy, compressfactor
+export volume, volumem, density, enthalpy, enthalpym, entropy, entropym, compressfactor
 export dewpoint, relhum, humrat, wetbulb, molarfrac, spechum
 export DryAir, Vapor, MoistAir
 export Volume, Enthalpy, Entropy, Temperature, Pressure, Density

@@ -11,7 +11,7 @@ function volume(::Type{DryAir}, Tk, P)
 end
 
 
-function molarvolume(::Type{DryAir}, Tk, P)
+function volumem(::Type{DryAir}, Tk, P)
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15 K!"
     @assert 0 <= P < 5e6 "Out of range error: Pressure should be below 5×10⁶ Pa"
     molarvolumeair(Tk, P)
@@ -30,7 +30,7 @@ function enthalpy(::Type{DryAir}, Tk, P)
     enthalpyair(Tk, P)
 end
 
-function molarenthalpy(::Type{DryAir}, Tk, P)
+function enthalpym(::Type{DryAir}, Tk, P)
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15 K!"
     @assert 0 <= P < 5e6 "Out of range error: Pressure should be below 5×10⁶ Pa"
     molarenthalpyair(Tk, P)
@@ -42,7 +42,7 @@ function entropy(::Type{DryAir}, Tk, P)
     entropyair(Tk, P)
 end
 
-function molarentropy(::Type{DryAir}, Tk, P)
+function entropym(::Type{DryAir}, Tk, P)
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15 K!"
     @assert 0 <= P < 5e6 "Out of range error: Pressure should be below 5×10⁶ Pa"
     molarentropyair(Tk, P)
@@ -59,7 +59,7 @@ function volume(::Type{Vapor}, Tk)
     volumevapor(Tk)
 end
     
-function molarvolume(::Type{Vapor}, Tk)
+function volumem(::Type{Vapor}, Tk)
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15 K!"
     molarvolvapor(Tk)
 end
@@ -74,12 +74,12 @@ function enthalpy(::Type{Vapor}, Tk)
     enthalpyvapor(Tk)
 end
 
-function molarenthalpy(::Type{Vapor}, Tk)
+function enthalpym(::Type{Vapor}, Tk)
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15 K!"
     enthalpyvapor(Tk)*Mv
 end
 
-function molarentropy(::Type{Vapor}, Tk)
+function entropym(::Type{Vapor}, Tk)
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15 K!"
     molarentropyvapor(Tk)
 end
@@ -150,7 +150,7 @@ function volume(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty
     volumemoist(Tk, P, xv)
 end
 
-function molarvolume(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+function volumem(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15! K"
     @assert 0 <= P < 5e6 "Out of range error: Pressure should be below 5×10⁶ Pa"
 
@@ -177,7 +177,7 @@ function enthalpy(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProper
     enthalpymoist(Tk, P, xv)
 end
 
-function molarenthalpy(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+function enthalpym(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15 K!"
     @assert 0 <= P < 5e6 "Out of range error: Pressure should be below 5×10⁶ Pa"
 
@@ -193,7 +193,7 @@ function entropy(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroPropert
     entropymoist(Tk, P, xv)
 end
 
-function molarentropy(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
+function entropym(::Type{MoistAir}, Tk, ::Type{T}, y, P) where {T<:PsychroProperty}
     @assert 173.1 < Tk < 473.2 "Out of range error: Temperature should be between 173.15 K and 473.15 K!"
     @assert 0 <= P < 5e6 "Out of range error: Pressure should be below 5×10⁶ Pa"
 

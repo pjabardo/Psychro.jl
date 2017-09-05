@@ -4,70 +4,90 @@ Implement the functions using the Unitful package to check units
 
 using Unitful
 
-function volume(::Type{DryAir}, Tk::Quantity, P::Quantity)
-    volume(DryAir, uconvert(u"K", Tk).val, uconvert(u"Pa", P).val)*1.0u"m^3/kg"
+const uT = u"K"
+const uP = u"Pa"
+const uV = u"m^3/kg"
+const umV = u"m^3/mol"
+const uD = u"kg/m^3"
+const umD = u"mol/m^3"
+const perc = u"cm/m"
+const uH = u"J/kg"
+const umH = u"J/mol"
+const uS = u"J/kg/K"
+const umS = u"J/mol/K"
+
+
+dimless{T,U} = Quantity{T, Unitful.Dimensions{()}, U}
+ndim = unit(dimless)
+
+
+val(u, x::Quantity) = uconvert(u, x).val
+val(u::Unitful.FreeUnits{(), Unitful.Dimensions{()}}, x) = uconvert(u, x)
+
+function volume(::Type{DryAir}, Tk::Quantity, P::Quantity, u=uV)
+    uconvert(u, volume(DryAir, val(uT, Tk), val(u"Pa", P))*uV)
 end
 
-function molarvolume(::Type{DryAir}, Tk::Quantity, P::Quantity)
-    molarvolume(DryAir, uconvert(u"K", Tk).val, uconvert(u"Pa", P).val)*1.0u"m^3/mol"
+function volumem(::Type{DryAir}, Tk::Quantity, P::Quantity, u=umV)
+    uconvert(u, volumem(DryAir, val(uT, Tk), val(uP, P))*umV)
 end
 
-function density(::Type{DryAir}, Tk::Quantity, P::Quantity)
-    density(DryAir, uconvert(u"K", Tk).val, uconvert(u"Pa", P).val)*1.0u"kg/m^3"
+function density(::Type{DryAir}, Tk::Quantity, P::Quantity, u=uD)
+    uconvert(u, density(DryAir, val(uT, Tk), val(uP, P))*uD)
 end
 
-function enthalpy(::Type{DryAir}, Tk::Quantity, P::Quantity)
-    enthalpy(DryAir, uconvert(u"K", Tk).val, uconvert(u"Pa", P).val)*1.0u"J/kg"
+function enthalpy(::Type{DryAir}, Tk::Quantity, P::Quantity, u=uH)
+    uconvert(u, enthalpy(DryAir, val(uT, Tk), val(uP, P))*uH)
 end
 
-function molarenthalpy(::Type{DryAir}, Tk::Quantity, P::Quantity)
-    molarenthalpy(DryAir, uconvert(u"K", Tk).val, uconvert(u"Pa", P).val)*1.0u"J/mol"
+function enthalpym(::Type{DryAir}, Tk::Quantity, P::Quantity, u=umH)
+    uconvert(u, enthalpym(DryAir, val(uT, Tk), val(uP, P))*umH)
 end
 
-function entropy(::Type{DryAir}, Tk::Quantity, P::Quantity)
-    entropy(DryAir, uconvert(u"K", Tk).val, uconvert(u"Pa", P).val)*1.0u"J/kg/K"
+function entropy(::Type{DryAir}, Tk::Quantity, P::Quantity, u=uS)
+    uconvert(u, entropy(DryAir, val(uT, Tk), val(uP, P))*uS)
 end
 
-function molarentropy(::Type{DryAir}, Tk::Quantity, P::Quantity)
-    molarentropy(DryAir, uconvert(u"K", Tk).val, uconvert(u"Pa", P).val)*1.0u"J/mol/K"
+function entropym(::Type{DryAir}, Tk::Quantity, P::Quantity, u=umS)
+    uconvert(u, entropym(DryAir, val(uT, Tk), val(uP, P))*umS)
 end
 
 function compressfactor(::Type{DryAir}, Tk::Quantity, P::Quantity)
-    compressfactor(DryAir, uconvert(u"K", Tk).val, uconvert(u"Pa", P).val)
+    compressfactor(DryAir, val(uT, Tk), val(uP, P))
 end
 
 
-function volume(::Type{Vapor}, Tk::Quantity, P::Quantity)
-    volume(Vapor, uconvert(u"K", Tk).val)*1.0u"m^3/kg"
+function volume(::Type{Vapor}, Tk::Quantity, u=uV)
+    uconvert(u, volume(Vapor, val(uT, Tk))*uV)
 end
 
-function molarvolume(::Type{Vapor}, Tk::Quantity)
-    molarvolume(Vapor, uconvert(u"K", Tk).val)*1.0u"m^3/mol"
+function volumem(::Type{Vapor}, Tk::Quantity, u=umV)
+    uconvert(u, volumem(Vapor, val(uT, Tk))*umV)
 end
 
-function density(::Type{Vapor}, Tk::Quantity)
-    density(Vapor, uconvert(u"K", Tk).val)*1.0u"kg/m^3"
+function density(::Type{Vapor}, Tk::Quantity, u=uD)
+    uconvert(u, density(Vapor, val(uT, Tk))*uD)
 end
 
-function enthalpy(::Type{Vapor}, Tk::Quantity)
-    enthalpy(Vapor, uconvert(u"K", Tk).val)*1.0u"J/kg"
+function enthalpy(::Type{Vapor}, Tk::Quantity, u=uH)
+    uconvert(u, enthalpy(Vapor, val(uT, Tk))*uH)
 end
 
-function molarenthalpy(::Type{Vapor}, Tk::Quantity)
-    molarenthalpy(Vapor, uconvert(u"K", Tk).val)*1.0u"J/mol"
+function enthalpym(::Type{Vapor}, Tk::Quantity, u=umH)
+    uconvert(u, enthalpym(Vapor, val(uT, Tk))*umH)
 end
 
 
-function entropy(::Type{Vapor}, Tk::Quantity)
-    entropy(Vapor, uconvert(u"K", Tk).val)*1.0u"J/kg/K"
+function entropy(::Type{Vapor}, Tk::Quantity, u=uS)
+    uconvert(u, entropy(Vapor, val(uT, Tk))*uS)
 end
 
-function molarentropy(::Type{Vapor}, Tk::Quantity)
-    molarentropy(Vapor, uconvert(u"K", Tk).val)*1.0u"J/mol/K"
+function entropym(::Type{Vapor}, Tk::Quantity, u=umS)
+    uconvert(u, entropym(Vapor, val(uT, Tk))*umS)
 end
 
 function compressfactor(::Type{Vapor}, Tk::Quantity)
-    compressfactor(Vapor, uconvert(u"K", Tk).val)
+    compressfactor(Vapor, val(uT, Tk))
 end
 
 function molarfrac(Tk::Quantity, ::Type{MolarFrac}, xv::Number, P::Quantity)
@@ -81,65 +101,65 @@ function molarfrac(Tk::Quantity, ::Type{SpecHum}, q::Number, P::Quantity)
 end
 
 function molarfrac(Tk::Quantity, ::Type{RelHum}, rel, P::Quantity)
-    molarfrac(uconvert(u"K", Tk).val, RelHum, rel, uconvert(u"Pa", P).val)
+    molarfrac(val(uT, Tk), RelHum, rel, val(uP, P))
 end
 
 function molarfrac(Tk::Quantity, ::Type{DewPoint}, D::Quantity, P::Quantity)
-    molarfrac(Tk, DewPoint, uconvert(u"K", D).val, uconvert(u"Pa", P).val)
+    molarfrac(Tk, DewPoint, uconvert(u"K", D).val, val(uP, P))
 end
 
 function molarfrac(Tk::Quantity, ::Type{WetBulb}, B::Quantity, P::Quantity)
-    molarfrac(uconvert(u"K", Tk).val, WetBulb, uconvert(u"K", B).val, uconvert(u"Pa", P).val)
+    molarfrac(val(uT, Tk), WetBulb, uconvert(u"K", B).val, val(uP, P))
 end
 
 function volume(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
+                ::Type{T}, y, P::Quantity, u=uV) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    volume(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"m^3/kg"
+    uconvert(u, volume(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*uV)
 end
+                   
 
-
-function molarvolume(::Type{MoistAir}, Tk::Quantity,
-                     ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
+function volumem(::Type{MoistAir}, Tk::Quantity,
+                 ::Type{T}, y, P::Quantity, u=umV) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    molarvolume(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"m^3/mol"
+    uconvert(u, volumem(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*umV)
 end
 
 function density(::Type{MoistAir}, Tk::Quantity,
-                 ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
+                 ::Type{T}, y, P::Quantity, u=uD) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    density(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"kg/m^3"
+    uconvert(u, density(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*uD)
 end
 
 function enthalpy(::Type{MoistAir}, Tk::Quantity,
-                  ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
+                  ::Type{T}, y, P::Quantity, u=uH) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    enthalpy(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"J/kg"
+    uconvert(u, enthalpy(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*uH)
 end
 
-function molarenthalpy(::Type{MoistAir}, Tk::Quantity,
-                       ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
+function enthalpym(::Type{MoistAir}, Tk::Quantity,
+                   ::Type{T}, y, P::Quantity, u=umH) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    molarenthalpy(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"J/mol"
+    uconvert(u, enthalpym(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*umH)
+end
+             
+function entropy(::Type{MoistAir}, Tk::Quantity,
+                  ::Type{T}, y, P::Quantity, u=uS) where {T<:PsychroProperty}
+    
+    xv = molarfrac(Tk, T, y, P)
+    uconvert(u, entropy(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*uS)
 end
 
-function entroppy(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
-
+function entropym(::Type{MoistAir}, Tk::Quantity,
+                  ::Type{T}, y, P::Quantity, u=umS) where {T<:PsychroProperty}
+    
     xv = molarfrac(Tk, T, y, P)
-    entropy(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"J/kg/K"
-end
-
-function molarentroppy(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
-
-    xv = molarfrac(Tk, T, y, P)
-    molarentropy(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"J/mol/K"
+    uconvert(u, entropym(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*umS)
 end
 
 
@@ -147,39 +167,39 @@ function compressfactor(::Type{MoistAir}, Tk::Quantity,
                         ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    compressfactor(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)
+    compressfactor(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))
 end
 
 
 
 function dewpoint(::Type{MoistAir}, Tk::Quantity,
-                  ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
+                  ::Type{T}, y, P::Quantity, u=u"°C") where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    dewpoint(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"K"
+    uconvert(u, dewpoint(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*u"°C")
 end
 
 
 function relhum(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
+                ::Type{T}, y, P::Quantity, u=ndim) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    relhum(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)
+    uconvert(u, relhum(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P)))
 end
 
 
 function wetbulb(::Type{MoistAir}, Tk::Quantity,
-                 ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
+                 ::Type{T}, y, P::Quantity, u=u"°C") where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    wetbulb(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)*1.0u"K"
+    uconvert(u, wetbulb(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*uT)
 end
 
 function humrat(::Type{MoistAir}, Tk::Quantity,
-                ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
+                ::Type{T}, y, P::Quantity, u=ndim) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    humrat(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)
+    uconvert(u, humrat(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P)))
 end
 
 function molarfrac(::Type{MoistAir}, Tk::Quantity,
@@ -192,5 +212,5 @@ function spechum(::Type{MoistAir}, Tk::Quantity,
                 ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    spechum(MoistAir, uconvert(u"K", Tk).val, MolarFrac, xv, uconvert(u"Pa", P).val)
+    spechum(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))
 end
