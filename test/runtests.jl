@@ -516,3 +516,16 @@ s1 =  Psychro.entropy.(Psychro.MoistAir, Tk, Psychro.WetBulb, Tbu, P)/1000
 @test maximum(abs, vol1-vol) ≈ 0.0 atol=0.001
 @test maximum(abs, h1-h) ≈ 0.0 atol=0.01
 @test maximum(abs, s1-s) ≈ 0.0 atol=0.0001
+
+Tbu1 = Psychro.wetbulb.(Psychro.MoistAir, Tk, Psychro.DewPoint, Td1+273.15, P)
+@test maximum(abs, Tbu1-Tbu) ≈ 0.0 atol=1e-4
+Tbu2 = Psychro.wetbulb.(Psychro.MoistAir, Tk, Psychro.RelHum, rel1/100, P)
+@test maximum(abs, Tbu2-Tbu) ≈ 0.0 atol=1e-4
+Tbu3 = Psychro.wetbulb.(Psychro.MoistAir, Tk, Psychro.HumRat, w1/100, P)
+@test maximum(abs, Tbu2-Tbu) ≈ 0.0 atol=1e-4
+
+Td2 = Psychro.dewpoint.(Psychro.MoistAir, Tk, Psychro.HumRat, w1, P)-273.15
+@test maximum(abs, Td2-Td1) ≈ 0.0 atol=1e-4
+Td3 = Psychro.dewpoint.(Psychro.MoistAir, Tk, Psychro.RelHum, rel1/100, P)-273.15
+@test maximum(abs, Td3-Td1) ≈ 0.0 atol=1e-4
+
