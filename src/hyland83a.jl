@@ -641,8 +641,39 @@ function Zmoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
         z0 = z
     end
     # Still need to check convergence.
-    throw("Compressibility factor for moist air failed to converge properly!", z, i, err)
+    throw(ConvergenceError("Compressibility factor for moist air failed to converge properly!", z, i, err))
     return z
+end
+
+
+function calcz(b0, c0, EPS=1e-8, MAXITER=200, relax=1.0)
+    z = (1.0 + sqrt(1.0 + 4*b0)) / 2.0
+    i = 0
+    dz = 0.0
+    
+    for i = 1:MAXITER
+        f = -c0 + z*(-b0 + z*(-1.0 + z))
+        df = -b0 + z*(-2.0 + 3.0*z)
+        dz = -f / df
+        if abs(dz) < EPS
+            return z + dz
+        end
+        z = z + relax*dz
+    end
+    
+    throw(ConvergenceError("Compressibility factor failed to converge properly!",
+                           z, i, abs(dz)))
+        
+end
+
+
+function Zmoist2(Tk, P, xv, EPS=1e-8, MAXITER=500)
+
+    vm0 = R*Tk
+    b0 = Bm(Tk, xv)/vm0
+    c0 = Cm(Tk, xv)/(vm0*vm0)
+    
+    return calcz(b0, c0, EPS, MAXITER, 1.0)
 end
 
 "Coefficients a_i to calculate enthalpy of moist air ref[2]"

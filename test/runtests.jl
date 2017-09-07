@@ -12,6 +12,9 @@ x = 0.33
 @test @evalpoly(x, p[1], p[2], p[3], p[4], p[5], p[6]) ≈ Psychro.@polyeval(x, p, 6) atol=1e-13
 
 
+# =================================================================================================
+# =                                         Hyland83a.jl                                          =
+# =================================================================================================
 
 #=
 Testing the virial coefficients. Table 1 from reference [2].
@@ -238,6 +241,9 @@ P = 5e6
 @test   0.6185  ≈ smoist(453.15, P) atol=0.0002
 @test   1.642  ≈ smoist(473.15, P) atol=0.002
 
+# =================================================================================================
+# =                                         Hyland83.jl                                           =
+# =================================================================================================
 
 # Appendix of ref. [1]. First table
 # Specific volume of saturated ice:
@@ -368,3 +374,34 @@ P = 5.0e6
 @test  6.83731 ≈ Psychro.entropyvapor(423.15)/1000 atol=0.00005
 @test  6.43218 ≈ Psychro.entropyvapor(473.15)/1000 atol=0.00005
 
+
+
+# =================================================================================================
+# =                                 High level interface                                          =
+# =================================================================================================
+
+# Testing higher level interface
+
+#using Psychro
+
+#Tk = 183.15:10.0:463.15
+#Pa = [0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 49.0]*1e5
+
+# Test volume - saturated moist air
+#t = Tk[4]
+#p = Pa[4]
+#v1 = volmoist(t, p)
+#v2 = Psychro.volume(Psychro.MoistAir, t, Psychro.RelHum, 1.0, p)
+#xvs(Tk, P) = Psychro.efactor(Tk,P)*Psychro.Pws(Tk)/P
+#zsatmoist(Tk,P) = Psychro.Zmoist(Tk, P, xvs(Tk, P))
+
+#@test v1 ≈ v2 rtol=1e-5
+
+#for p1 in Pa, t1 in Tk
+#    println(p1, " - ", t1, " - ", zsatmoist(t1, p1))
+    #v2 = Psychro.volume(Psychro.MoistAir, t1, Psychro.RelHum, 1.0, p1)
+   
+    
+#end
+
+    
