@@ -328,7 +328,7 @@ in equation 18 [2]
 
 
 """
-function efactor(Tk, P, EPS=1e-8, MAXITER=200)
+function efactor2(Tk, P, EPS=1e-8, MAXITER=200)
     f = 1.0
     i = 0
     err = 0.0
@@ -341,6 +341,7 @@ function efactor(Tk, P, EPS=1e-8, MAXITER=200)
             if fnovo < 1
                 fnovo = 1.0
             end
+            println(i)
             return fnovo
         end
         
@@ -354,6 +355,79 @@ function efactor(Tk, P, EPS=1e-8, MAXITER=200)
     fnovo
 end
 
+function efactor(Tk, P, relax=1.0, EPS=1e-8, MAXITER=200)
+
+    if Tk < 273.16
+        vc = volumeice(Tk) * Mv
+        p = Pws_s(Tk)
+        k = 0.0
+    else
+        vc = volumewater(Tk) * Mv
+        p = Pws_l(Tk)
+        k = henryk(Tk)
+    end
+    
+    κ = kappa_f(Tk)
+
+    RT = R * Tk
+    
+    baa = Baa(Tk)
+    bww = Bww(Tk)
+    baw = Baw(Tk)
+    caaa = Caaa(Tk)
+    caaw = Caaw(Tk)
+    caww = Caww(Tk)
+    cwww = Cwww(Tk)
+    fun = f -> (log(f) - lnf(f, P, p, k, κ, vc, RT, baa, baw, bww, caaa, caaw, caww, cwww))
+
+    ef = 1e-8
+    
+    f = 1.0
+    i = 0
+    err = 0.0
+    df = 0.0
+    for i = 1:MAXITER
+        g = fun(f)
+        dg = (fun(f+ef) - g) / ef
+        df = -g/dg
+                
+        if abs(df) < EPS
+            f = f + df
+            if f < 1
+                f = 1.0
+            end
+            return f
+        end
+        
+        f = f + relax*df
+    end
+
+    throw(ConvergenceError("Enhancement factor calculation did not converge!", f, i, abs(df)))
+    f
+end
+
+
+
+function lnf(f, P, p, k, κ, vc, RT, baa, baw, bww, caaa, caaw, caww, cwww)
+    P2 = P*P
+    p2 = p*p
+    xas = (P - f*p) / P
+    xas2 = xas*xas
+    RT2 = RT*RT
+
+    t1 = vc/RT * ( (1 + κ*p)*(P-p) - 0.5*κ*(P2 - p2) )
+    t2 = log(1.0 - k*xas*P) + (xas2*P/RT)*baa - (2*xas2*P/RT)*baw
+    t3 = -(P-p-xas2*P)/RT*bww + xas2*xas*P*P/RT2 * caaa
+    t4 = 3*xas2*(1-2xas)*P2/(2*RT2) * caaw - (3xas2*(1-xas)*P2)/RT2 * caww
+    t5 = -( (1+2xas)*(1-xas)^2*P2 - p2 )/(2*RT2) * cwww - (xas2*(1-3xas)*(1-xas)*P2)/RT2 * baa*bww
+    t6 = -(2xas2*xas*(2-3xas)*P2) / RT2 * baa*baw + ( 6xas2*(1-xas)^2*P2 )/RT2 * bww*baw
+    t7 = -3xas2*xas2*P2/(2RT2)*baa*baa - ( 2xas2*(1-xas)*(1-3xas)*P2 )/RT2 * baw*baw
+    t8 = -( p2 - (1+3xas)*(1-xas)^3*P2 ) / (2*RT2) * bww*bww
+    
+
+   return t1+t2+t3+t4+t5+t6+t7+t8
+    
+end
 
 """
     ```lnf(Tk, P, xas)```
@@ -361,7 +435,7 @@ end
 Auxiliary function used to calculate the enhancement factor.
 Actually, this function implements the RHS of eq. 18 of [2].
 """
-function lnf(Tk, P, xas)
+function lnf2(Tk, P, xas)
     if Tk < 273.16
         vc = volumeice(Tk) * Mv
         p = Pws_s(Tk)
@@ -720,7 +794,12 @@ function molarentropymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
 
     z = Zmoist(Tk, P, xv, EPS, MAXITER)
     vm = z*R*Tk/P
-    h3 = -R * log(P / 101325.0) + xa*R*log(z/xa) + xv*R*log(z/xv) 
+    
+    h3 = -R * log(P / 101325.0) + xa*R*log(z/xa)
+    if xv > 1e-8
+        h3 = h3 + xv*R*log(z/xv)
+    end
+    
     h4 = -R/vm * (  (Bm(Tk, xv) + Tk*dBm(Tk,xv)) + 0.5/vm*(Cm(Tk, xv) + Tk*dCm(Tk, xv)) )
     
 
