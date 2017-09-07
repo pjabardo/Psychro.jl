@@ -112,6 +112,24 @@ dCaaa(Tk) = 1.0/(Tk*Tk) * (0.190905e-6 - 1.264934e-4/Tk)
 
 
 """
+    ```Zair(Tk, P, EPS, MAXITER)```
+
+Compressibility factor of dry air.
+
+ * `Tk` Temperature in K
+ * `P` Pressure in Pa
+ * `EPS`: Acceptable error
+ * `MAXITER`: Maixmum number of iterations
+ * Output: Z (nondimensional)
+"""
+function Zair(Tk, P, EPS=1e-8, MAXITER=100)
+    vm0 = R*Tk/P
+    b0 = Baa(Tk) / vm0
+    c0 = Caaa(Tk) / (vm0*vm0)
+    z = calcz(b0, c0, EPS, MAXITER)
+end
+
+"""
     molarvolumeair(Tk)
 
 Molar volume of dry air. Equation 12 of reference [1].
@@ -125,26 +143,13 @@ This function requires iteration to compute the volume.
 """
 function molarvolumeair(Tk, P, EPS=1e-8, MAXITER=100)
 
-    RT=R*Tk
-    va = RT/P
+    vm0 = R*Tk/P
 
-    b = Baa(Tk)
-    c = Caaa(Tk)
-    z0 = 1.0
-    z=1.0
-    err = 0.0
-    i = 0
-    for i = 1:MAXITER
-        z = 1.0 + 1/va*(b + c/va)
-        va = RT*z/P
-        err = abs(z-z0)
-        if err < EPS
-            return va
-        end
-        z0 = z
-    end
-    throw(ConvergenceError("Molarvolume failed to converge", va, i, err))
-    return va
+    b0 = Baa(Tk)/vm0
+    c0 = Caaa(Tk)/(vm0*vm0)
+    z = calcz(b0, c0, EPS, MAXITER)
+    
+    return z*vm0
 end
 
 """
@@ -620,61 +625,17 @@ Compressibility factor of moist air.
  * `MAXITER`: Maixmum number of iterations
  * Output: Z (nondimensional)
 """
-function Zmoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
+function Zmoist(Tk, P, xv, EPS=1e-8, MAXITER=500)
 
-    RT = R*Tk
-    vm = RT/P
-    b = Bm(Tk, xv)
-    c = Cm(Tk, xv)
-    z0 = 1.0
-    z = 1.0
-    err = 0.0
-    i = 0
-    for i = 1:MAXITER
-        z = 1 + 1/vm * (b + c/vm)
-
-        vm = z*RT/P
-        err = abs(z-z0)
-        if err < EPS
-            return z
-        end
-        z0 = z
-    end
-    # Still need to check convergence.
-    throw(ConvergenceError("Compressibility factor for moist air failed to converge properly!", z, i, err))
-    return z
-end
-
-
-function calcz(b0, c0, EPS=1e-8, MAXITER=200, relax=1.0)
-    z = (1.0 + sqrt(1.0 + 4*b0)) / 2.0
-    i = 0
-    dz = 0.0
-    
-    for i = 1:MAXITER
-        f = -c0 + z*(-b0 + z*(-1.0 + z))
-        df = -b0 + z*(-2.0 + 3.0*z)
-        dz = -f / df
-        if abs(dz) < EPS
-            return z + dz
-        end
-        z = z + relax*dz
-    end
-    
-    throw(ConvergenceError("Compressibility factor failed to converge properly!",
-                           z, i, abs(dz)))
-        
-end
-
-
-function Zmoist2(Tk, P, xv, EPS=1e-8, MAXITER=500)
-
-    vm0 = R*Tk
+    vm0 = R*Tk/P
     b0 = Bm(Tk, xv)/vm0
     c0 = Cm(Tk, xv)/(vm0*vm0)
     
     return calcz(b0, c0, EPS, MAXITER, 1.0)
 end
+
+
+
 
 "Coefficients a_i to calculate enthalpy of moist air ref[2]"
 const a = (0.63290874e1, 0.28709015e2, 0.26431805e-2,
