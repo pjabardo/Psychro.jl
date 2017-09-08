@@ -1,4 +1,3 @@
-#include("../src/Psychro.jl")
 using Base.Test
 using Psychro
 
