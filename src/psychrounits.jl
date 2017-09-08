@@ -97,7 +97,7 @@ function molarfrac(Tk::Quantity, ::Type{HumRat}, w::Number, P::Quantity)
    w / (Mv/Ma + w)
 end
 function molarfrac(Tk::Quantity, ::Type{SpecHum}, q::Number, P::Quantity)
-    q * Ma / (Mv + r*(Ma - Mv))
+    q * Ma / (Mv + q*(Ma - Mv))
 end
 
 function molarfrac(Tk::Quantity, ::Type{RelHum}, rel, P::Quantity)
@@ -164,7 +164,7 @@ end
 
 
 function compressfactor(::Type{MoistAir}, Tk::Quantity,
-                        ::Type{T}, y::Quantity, P::Quantity) where {T<:PsychroProperty}
+                        ::Type{T}, y, P::Quantity) where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
     compressfactor(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))
@@ -176,7 +176,7 @@ function dewpoint(::Type{MoistAir}, Tk::Quantity,
                   ::Type{T}, y, P::Quantity, u=u"°C") where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    uconvert(u, dewpoint(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*u"°C")
+    uconvert(u"°C", dewpoint(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*uT)
 end
 
 
@@ -192,7 +192,7 @@ function wetbulb(::Type{MoistAir}, Tk::Quantity,
                  ::Type{T}, y, P::Quantity, u=u"°C") where {T<:PsychroProperty}
 
     xv = molarfrac(Tk, T, y, P)
-    uconvert(u, wetbulb(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*uT)
+    uconvert(u"°C", wetbulb(MoistAir, val(uT, Tk), MolarFrac, xv, val(uP, P))*uT)
 end
 
 function humrat(::Type{MoistAir}, Tk::Quantity,
