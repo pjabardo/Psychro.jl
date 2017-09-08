@@ -3,7 +3,7 @@
 """
 # Thermodynamic properties of moist air
 
-This  module implements functions to calculate the
+This  package implements functions to calculate the
 thermodynamic properties of moist air. It uses
 correlations recommended by ASHRAE and described
 in the articles listed below.
