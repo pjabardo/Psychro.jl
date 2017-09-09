@@ -53,7 +53,6 @@ function calcwetbulb(Tk, P, xv, EPS=1e-8, MAXITER=200)
 
     B = Tk - 1.0 # Initial guess
     h = 1e-7
-    i = 0
     dB = 0.0
     for i = 1:MAXITER
         f = aux_WB(w, Tk, B, P)
@@ -65,7 +64,6 @@ function calcwetbulb(Tk, P, xv, EPS=1e-8, MAXITER=200)
             return B
         end
     end
-    throw(ConvergenceError("Wet Bulb temperature failed to converge!", B, i, dB))
-    return B  # Later on I will have to check covergence.
+    throw(ConvergenceError("Wet Bulb temperature failed to converge!", B, MAXITER, dB))
       
 end

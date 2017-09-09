@@ -287,7 +287,6 @@ function Tws(P)
     lnP = log(P)
     T = hh[1] + lnP * (hh[2] + lnP*(hh[3] + lnP*(hh[4] + lnP*hh[5]))) + hh[6] * P
 
-    i = 0
     dT = 0.0
     for i = 0:MAXITER
         f = P - Pws(T)
@@ -299,8 +298,7 @@ function Tws(P)
             return T
         end
     end
-    throw(ConvergenceError("Calculation of saturation temperature failed to converge!", T, i, dT))
-    return T
+    throw(ConvergenceError("Calculation of saturation temperature failed to converge!", T, MAXITER, dT))
 end
 
 

@@ -330,7 +330,6 @@ in equation 18 [2]
 """
 function efactor2(Tk, P, EPS=1e-8, MAXITER=200)
     f = 1.0
-    i = 0
     err = 0.0
     for i = 1:MAXITER
         xas = (P-f*Pws(Tk)) / P
@@ -351,8 +350,7 @@ function efactor2(Tk, P, EPS=1e-8, MAXITER=200)
         fnovo = 1.0
     end
 
-    throw(ConvergenceError("Enhancement factor calculation did not converge!", fnovo, i, err))
-    fnovo
+    throw(ConvergenceError("Enhancement factor calculation did not converge!", fnovo, MAXITER, err))
 end
 
 function efactor(Tk, P, relax=1.0, EPS=1e-8, MAXITER=200)
@@ -383,7 +381,6 @@ function efactor(Tk, P, relax=1.0, EPS=1e-8, MAXITER=200)
     ef = 1e-8
     
     f = 1.0
-    i = 0
     err = 0.0
     df = 0.0
     for i = 1:MAXITER
@@ -402,8 +399,7 @@ function efactor(Tk, P, relax=1.0, EPS=1e-8, MAXITER=200)
         f = f + relax*df
     end
 
-    throw(ConvergenceError("Enhancement factor calculation did not converge!", f, i, abs(df)))
-    f
+    throw(ConvergenceError("Enhancement factor calculation did not converge!", f, MAXITER, abs(df)))
 end
 
 

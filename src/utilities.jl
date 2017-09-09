@@ -75,7 +75,6 @@ compressibility factor
 function calcz(b0, c0, EPS=1e-8, MAXITER=200, relax=1.0)
 
     z = (1.0 + sqrt(1.0 + 4*b0)) / 2.0
-    i = 0
     dz = 0.0
     
     for i = 1:MAXITER
@@ -89,6 +88,6 @@ function calcz(b0, c0, EPS=1e-8, MAXITER=200, relax=1.0)
     end
     
     throw(ConvergenceError("Compressibility factor failed to converge properly!",
-                           z, i, abs(dz)))
+                           z, MAXITER, abs(dz)))
         
 end
