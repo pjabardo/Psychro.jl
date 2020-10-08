@@ -112,21 +112,20 @@ dCaaa(Tk) = 1.0/(Tk*Tk) * (0.190905e-6 - 1.264934e-4/Tk)
 
 
 """
-    ```Zair(Tk, P, EPS, MAXITER)```
+    ```Zair(Tk, P)```
 
 Compressibility factor of dry air.
 
  * `Tk` Temperature in K
  * `P` Pressure in Pa
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
+
  * Output: Z (nondimensional)
 """
-function Zair(Tk, P, EPS=1e-8, MAXITER=100)
+function Zair(Tk, P)
     vm0 = R*Tk/P
     b0 = Baa(Tk) / vm0
     c0 = Caaa(Tk) / (vm0*vm0)
-    z = calcz(b0, c0, EPS, MAXITER)
+    z = calcz(b0, c0)
 end
 
 """
@@ -137,17 +136,15 @@ This function requires iteration to compute the volume.
 
  * `Tk` Temperature in K
  * `P` Pressure in Pa
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
  * Output: molar volume in m^3/mol
 """
-function molarvolumeair(Tk, P, EPS=1e-8, MAXITER=100)
+function molarvolumeair(Tk, P)
 
     vm0 = R*Tk/P
 
     b0 = Baa(Tk)/vm0
     c0 = Caaa(Tk)/(vm0*vm0)
-    z = calcz(b0, c0, EPS, MAXITER)
+    z = calcz(b0, c0)
     
     return z*vm0
 end
@@ -159,11 +156,9 @@ Specific volume of dry air. Uses `molarvolumeair`.
 
  * `Tk` Temperature in K
  * `P` Pressure in Pa
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
  * Output: molar volume in m^3/kg
 """
-volumeair(Tk, P, EPS=1e-8, MAXITER=100) = molarvolumeair(Tk, P, EPS, MAXITER) / Ma
+volumeair(Tk, P) = molarvolumeair(Tk, P) / Ma
 
 
 """
@@ -173,16 +168,14 @@ Molar enthalpy of dry air. Equation 13 of reference [2]
 
  * `Tk` Temperature in K
  * `P` Pressure in Pa
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
  * Output: m^3/mol
 """
-function molarenthalpyair(Tk, P, EPS=1e-8, MAXITER=100)
+function molarenthalpyair(Tk, P)
     h1 = -0.79078691e4 + Tk*(0.28709015e2 +
                              Tk*(0.26431805e-2 +
                                  Tk*(-0.10405863e-4 +
                                      Tk*(0.18660410e-7 - 0.97843331e-11*Tk))))
-    va = molarvolumeair(Tk, P, EPS, MAXITER)
+    va = molarvolumeair(Tk, P)
 
     h2 = R*Tk/va * ( (Baa(Tk) - Tk*dBaa(Tk)) + (Caaa(Tk) - 0.5*Tk*dCaaa(Tk))/va )
 
@@ -198,12 +191,11 @@ Specific enthalpy of dry air. Equation 13 of reference [2]
 
  * `Tk` Temperature in K
  * `P` Pressure in Pa
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
+
  * Output: m^3/kg
 """
-function enthalpyair(Tk, P, EPS=1e-8, MAXITER=100)
-    return molarenthalpyair(Tk, P, EPS, MAXITER) / Ma
+function enthalpyair(Tk, P)
+    return molarenthalpyair(Tk, P) / Ma
     
 end
 
@@ -220,14 +212,12 @@ Specific entropy of dry air. Equation 14 of reference [2]
 
  * `Tk` Temperature in K
  * `P` Pressure in Pa
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
  * Output: m^3/(kg.K)
 """
-function molarentropyair(Tk, P, EPS=1e-8, MAXITER=100)
+function molarentropyair(Tk, P)
 
-    s1 = @polyeval(Tk, ℓ, 5) + ℓ[6]*log(Tk) - R*log(P/101325.0)
-    va = molarvolumeair(Tk, P, EPS, MAXITER)
+    s1 = polyeval(Tk, ℓ, 5) + ℓ[6]*log(Tk) - R*log(P/101325.0)
+    va = molarvolumeair(Tk, P)
     s2 = R*log(P*va/R/Tk) - R/va * ( (Baa(Tk) + Tk*dBaa(Tk)) + 0.5/va * (Caaa(Tk) + Tk*dCaaa(Tk)))
 
     return (s1 + s2) 
@@ -243,13 +233,11 @@ Specific entropy of dry air. Equation 14 of reference [2]
 
  * `Tk` Temperature in K
  * `P` Pressure in Pa
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
  * Output: m^3/(kg.K)
 """
-function entropyair(Tk, P, EPS=1e-8, MAXITER=100)
+function entropyair(Tk, P)
 
-    return molarentropyair(Tk, P, EPS, MAXITER) / Ma
+    return molarentropyair(Tk, P) / Ma
 end
 
 
@@ -482,7 +470,7 @@ Molar fraction of water vapor in saturated moist air
  * Output: molar fraction
 
 """
-molarfracmoist_sat(Tk, P) = efactor(Tk, P) * Pws(Tk) / P
+molarfracmoist_sat(Tk, P,EPS=1e-8, MAXITER=200) = efactor(Tk, P,EPS, MAXITER) * Pws(Tk) / P
 
 
 
@@ -666,7 +654,7 @@ Assumes a real gas.
  * `xv`  Molar fraction of water vapor
  * Output: molar volume in m^3/mol
 """
-molarvolumemoist(Tk, P, xv, EPS=1e-8, MAXITER=100) = Zmoist(Tk, P, xv, EPS, MAXITER) * R * Tk / P
+molarvolumemoist(Tk, P, xv) = Zmoist(Tk, P, xv) * R * Tk / P
 
 """
     ```volumemoist```
@@ -680,7 +668,7 @@ by a mixture of dry air and water vapor per kg of dry air.
  * `xv`  Molar fraction of water vapor
  * Output: molar volume in m^3/kg of dry air.
 """
-volumemoist(Tk, P, xv, EPS=1e-8, MAXITER=100) = molarvolumemoist(Tk,P,xv,EPS,MAXITER) / (Ma*(1-xv))
+volumemoist(Tk, P, xv) = molarvolumemoist(Tk,P,xv) / (Ma*(1-xv))
 
 
 """
@@ -691,17 +679,15 @@ Compressibility factor of moist air.
  * `Tk` Temperature in K
  * `P` Pressure in Pa
  * `xv` molar fraction of water vapor.
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
  * Output: Z (nondimensional)
 """
-function Zmoist(Tk, P, xv, EPS=1e-8, MAXITER=500)
+function Zmoist(Tk, P, xv)
 
     vm0 = R*Tk/P
     b0 = Bm(Tk, xv)/vm0
     c0 = Cm(Tk, xv)/(vm0*vm0)
     
-    return calcz(b0, c0, EPS, MAXITER, 1.0)
+    return calcz(b0, c0)
 end
 
 
@@ -722,16 +708,14 @@ Molar enthalphy of moist air defined as enthalpy dry air.
  * `Tk` Temperature in K
  * `P` Pressure in Pa
  * `xv` molar fraction of water vapor.
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
  * Output: J/mol
 
 """
-function molarenthalpymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
+function molarenthalpymoist(Tk, P, xv)
     xa = 1.0-xv
-    h1 = xa*(@polyeval(Tk, a, 6) -7914.1982)
-    h2 = xv*(@polyeval(Tk, d, 6) + 35994.17)
-    vm = molarvolumemoist(Tk, P, xv, EPS, MAXITER)
+    h1 = xa*(polyeval(Tk, a, 6) -7914.1982)
+    h2 = xv*(polyeval(Tk, d, 6) + 35994.17)
+    vm = molarvolumemoist(Tk, P, xv)
     h3 = R*Tk/vm * (Bm(Tk, xv) - Tk*dBm(Tk,xv)
                     + 1/vm*( Cm(Tk,xv) - 0.5*Tk*dCm(Tk,xv) ) )
     return (h1 + h2 + h3)
@@ -747,13 +731,11 @@ dry air.
  * `Tk` Temperature in K
  * `P` Pressure in Pa
  * `xv` molar fraction of water vapor.
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
  * Output: J/kg of dry air
 
 """
-function enthalpymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
-    hm = molarenthalpymoist(Tk, P, xv, EPS, MAXITER)
+function enthalpymoist(Tk, P, xv)
+    hm = molarenthalpymoist(Tk, P, xv)
     return hm / ((1-xv)*Ma)
 end
 
@@ -770,7 +752,7 @@ const k = (0.2196603e1, 0.19743819e-1, -0.70128225e-4,
 
 
 """
-    molarentropymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
+    molarentropymoist(Tk, P, xv)
 
 Molar entropy of moist air defined as entropy per kg of
 dry air.
@@ -778,17 +760,16 @@ dry air.
  * `Tk` Temperature in K
  * `P` Pressure in Pa
  * `xv` molar fraction of water vapor.
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
+
  * Output: J/mol/K of dry air
 
 """
-function molarentropymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
+function molarentropymoist(Tk, P, xv)
     xa = 1.0-xv
-    h1 =  @polyeval(Tk, g, 5) + g[6]*log(Tk) - 196.125465
-    h2 =  @polyeval(Tk, k, 6) + k[7]*log(Tk) - 63.31449
+    h1 =  polyeval(Tk, g, 5) + g[6]*log(Tk) - 196.125465
+    h2 =  polyeval(Tk, k, 6) + k[7]*log(Tk) - 63.31449
 
-    z = Zmoist(Tk, P, xv, EPS, MAXITER)
+    z = Zmoist(Tk, P, xv)
     vm = z*R*Tk/P
     
     h3 = -R * log(P / 101325.0) + xa*R*log(z/xa)
@@ -811,14 +792,12 @@ dry air.
  * `Tk` Temperature in K
  * `P` Pressure in Pa
  * `xv` molar fraction of water vapor.
- * `EPS`: Acceptable error
- * `MAXITER`: Maixmum number of iterations
  * Output: J/kg/K of dry air
 
 """
-function entropymoist(Tk, P, xv, EPS=1e-8, MAXITER=100)
+function entropymoist(Tk, P, xv)
 
-    return molarentropymoist(Tk, P, xv, EPS, MAXITER) / ( (1-xv)*Ma )
+    return molarentropymoist(Tk, P, xv) / ( (1-xv)*Ma )
     
 end
 

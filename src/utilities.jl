@@ -1,5 +1,5 @@
 """
-    @polyeval(z, p, N)
+    polyeval(z, p, N)
 
 Evaluate the polynomial ``\\sum_k c[k] z^{k-1}`` for the coefficients `c[1]`, `c[2]`, ..., `c[N]`;
 that is, the coefficients are given in ascending order by power of `z`.  This macro expands
@@ -15,26 +15,18 @@ julia> p = randn(5)
  -0.87642  
   0.260407 
 
-julia> @polyeval(0.5, p, 5)
+julia> polyeval(0.5, p, 5)
 -0.020427265391245605
 
 ```
 """
-macro polyeval(x, p, N)
-    if N==1
-        return :($(esc(p))[1])
-    elseif N==2
-        return :($(esc(p))[1] + $(esc(x))*$(esc(p))[2])
-    else
-        nm1 = N-1
-        ex = :($(esc(p))[$nm1] + $(esc(x))*$(esc(p))[$N])
-        for i in N-2:-1:1
-            ex = :($(esc(p))[$i] + $(esc(x))*$ex)
-        end
-    end
-    return ex
+function polyeval(x, p::Vector, N)
+    return evalpoly(x,@view p[1:N])
 end
 
+function polyeval(x, p::Tuple, N)
+    return evalpoly(x,p[1:N])
+end
 """
     ConvergenceError([msg, val, niter, err])
 
@@ -62,32 +54,54 @@ Calculates the compressibility factor using a virial equation:
 
 `z = 1 + b₀/z + c₀/vₘ²`
 
-The algorithm initially uses as an initial guess only the b₀ virial 
-coefficient. Then it uses a Newton-Raphson algorithm to compute the
-compressibility factor
+The algorithm transforms the values to a cubic polynomial and solves the roots using 
+cardan's method.
 
  * `b0` b₀ parameter of the virial equation
  * `c0` c₀ parameter of the virial equation
- * `EPS` Convergence criterium
- * `MAXITER` Maximim number of iterations
- * `relax` Sub-relaxation parameter if convergence is difficult.
 """
-function calcz(b0, c0, EPS=1e-8, MAXITER=200, relax=1.0)
-
-    z = (1.0 + sqrt(1.0 + 4*b0)) / 2.0
-    dz = 0.0
+function calcz(b0, c0)
+    #transformation:
+    #z3 = z2 + b₀z + c0
+    #z3-z2- b₀z- c0
+    poly =(-c0,-b0,-1.0,1.0)
+    res =  cardan(poly)
     
-    for i = 1:MAXITER
-        f = -c0 + z*(-b0 + z*(-1.0 + z))
-        df = -b0 + z*(-2.0 + 3.0*z)
-        dz = -f / df
-        if abs(dz) < EPS
-            return z + dz
-        end
-        z = z + relax*dz
+    posibleres = filter(i->abs(imag(i)) < sqrt(eps(b0)),res)
+    realres = map(real,posibleres)
+    if length(realres)>=1
+        return maximum(realres)
+    else
+    return error("not found")
     end
-    
-    throw(ConvergenceError("Compressibility factor failed to converge properly!",
-                           z, MAXITER, abs(dz)))
-        
+end
+
+
+function cardan(poly::NTuple{4,T}) where {T<:AbstractFloat}
+    # Cubic equation solver for complex polynomial (degree=3)
+    # http://en.wikipedia.org/wiki/Cubic_function   Lagrange's method
+    third = 1//3
+    a1  =  T(1.0)
+    E1  = -complex(poly[3])*a1
+    E2  =  complex(poly[2])*a1
+    E3  = -complex(poly[1])*a1
+    s0  =  E1
+    E12 =  E1*E1
+    A   =  2*E1*E12 - 9*E1*E2 + 27*E3 # = s1^3 + s2^3
+    B   =  E12 - 3*E2                 # = s1 s2
+    # quadratic equation: z^2 - Az + B^3=0  where roots are equal to s1^3 and s2^3
+    Δ = sqrt(A*A - 4*B*B*B)
+    if real(conj(A)*Δ)>=0 # scalar product to decide the sign yielding bigger magnitude
+        s1 = exp(log(0.5 * (A + Δ)) * third)
+    else
+        s1 = exp(log(0.5 * (A - Δ)) * third)
+    end
+    if s1 == 0
+        s2 = s1
+    else
+        s2 = B / s1
+    end
+    zeta1 = complex(-0.5, sqrt(T(3.0))*0.5)
+    zeta2 = conj(zeta1)
+    return third*(s0 + s1 + s2), third*(s0 + s1*zeta2 + s2*zeta1), third*(s0 + s1*zeta1 + s2*zeta2)
 end

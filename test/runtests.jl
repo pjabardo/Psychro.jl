@@ -1,4 +1,4 @@
-using Base.Test
+using Test
 using Psychro
 
 include("test_utilities.jl")

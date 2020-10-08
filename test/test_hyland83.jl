@@ -1,36 +1,37 @@
 # =================================================================================================
 # =                                         Hyland83.jl                                           =
 # =================================================================================================
-
+@testset "Hyland83" begin
 # Appendix of ref. [1]. First table
-# Specific volume of saturated ice:
+@testset "Specific volume of saturated ice" begin
 @test 1.0768e-3 ≈ Psychro.volumeice(173.15) atol=0.0001e-3
 @test 1.0829e-3 ≈ Psychro.volumeice(223.15) atol=0.0001e-3
 @test 1.0909e-3 ≈ Psychro.volumeice(273.16) atol=0.0001e-3
-
-# Specific volume of saturated liquid water
+end
+@testset "Specific volume of saturated liquid water" begin
 @test 1.00021e-3 ≈ Psychro.volumewater(273.16) atol=0.00001e-3
 @test 1.01215e-3 ≈ Psychro.volumewater(323.15) atol=0.00001e-3
 @test 1.04346e-3 ≈ Psychro.volumewater(373.15) atol=0.00001e-3 # In the paper there is a typo in the power of 10: 1.04346e10
 @test 1.09050e-3 ≈ Psychro.volumewater(423.15) atol=0.00001e-3
 @test 1.15653e-3 ≈ Psychro.volumewater(473.15) atol=0.00001e-3
+end
 
-
-# Saturation enthalpy of saturated ice
+@testset "Saturation enthalpy of saturated ice" begin
 @test -507.215e3 ≈ Psychro.enthalpyice(173.15) atol=0.001e3
 @test -429.413e3 ≈ Psychro.enthalpyice(223.15) atol=0.001e3
 @test -333.429e3 ≈ Psychro.enthalpyice(273.15) atol=0.001e3  # The table presents -333.409. Typo???
+end
 
-# Saturation enthalpy of saturated liquid water
+@testset "Saturation enthalpy of saturated liquid water" begin
 @test 0.0 ≈ Psychro.enthalpywater(273.16) atol=1.0
 @test 209.330e3 ≈ Psychro.enthalpywater(323.15) atol=5
 @test 419.158e3 ≈ Psychro.enthalpywater(373.15) atol=5
 @test 632.210e3 ≈ Psychro.enthalpywater(423.15) atol=9
 @test 852.329e3 ≈ Psychro.enthalpywater(473.15) atol=15
-
+end
 
 # Table 2 of reference [2]
-# Enhancement factor
+@testset "Enhancement factor" begin
 P = 0.1e6
 @test 1.0105 ≈ Psychro.efactor(173.15, P) atol=0.0001
 @test 1.0039 ≈ Psychro.efactor(273.15, P) atol=0.0001
@@ -61,21 +62,23 @@ P = 5.0e6
 @test 1.116 ≈ Psychro.efactor(443.15, P) atol=0.001
 @test 1.117 ≈ Psychro.efactor(453.15, P) atol=0.001
 @test 1.116 ≈ Psychro.efactor(473.15, P) atol=0.001
+end
 
-# Saturation pressure of water vapor over ice
+@testset "Saturation pressure of water vapor over ice" begin
 # Second table in the appendix of reference [1]
 @test 1.40510e-3 ≈ Psychro.Pws_s(173.15) atol=0.00001e-3
 @test 6.11153e2 ≈ Psychro.Pws_s(273.15) atol=0.00001e2
+end
 
-# Saturation pressure of water vapor over liquid water
+@testset "Saturation pressure of water vapor over liquid water" begin
 # Second table in the appendix of reference [1]
 @test 6.11213e2 ≈ Psychro.Pws_l(273.15) atol=0.00001e2
 @test 1.01419e5 ≈ Psychro.Pws_l(373.15) atol=0.00001e5
 @test 1.55507e6 ≈ Psychro.Pws_l(473.15) atol=0.00001e6
+end
 
 
-
-# Testing saturation temperature function:
+@testset " saturation temperature function" begin
 @test Psychro.Tws(Psychro.Pws_s(173.15)) ≈ 173.15 atol=1e-5
 @test Psychro.Tws(Psychro.Pws_s(223.15)) ≈ 223.15 atol=1e-5
 @test Psychro.Tws(Psychro.Pws_s(273.15)) ≈ 273.15 atol=1e-5
@@ -84,23 +87,25 @@ P = 5.0e6
 @test Psychro.Tws(Psychro.Pws_l(323.15)) ≈ 323.15 atol=1e-5
 @test Psychro.Tws(Psychro.Pws_l(373.15)) ≈ 373.15 atol=1e-5
 @test Psychro.Tws(Psychro.Pws_l(473.15)) ≈ 473.15 atol=1e-5
+end
 
-
-# First virial coefficient of saturated vapor B'
+@testset "First virial coefficient of saturated vapor B'" begin
 # Second table in the appendix of reference [1]
 @test -3.2939e-5 ≈ Psychro.Blin(173.15) atol=0.0001e-5
 @test -8.3497e-7 ≈ Psychro.Blin(273.15) atol=0.0001e-7
 @test -1.4658e-7 ≈ Psychro.Blin(373.15) atol=0.0001e-5
 @test -5.0508e-8 ≈ Psychro.Blin(473.15) atol=0.0001e-5
+end
 
-# Second virial coefficient of saturated vapor C'
+@testset "Second virial coefficient of saturated vapor C'" begin
 # Second table in the appendix of reference [1]
 @test -4.6563e-9 ≈ Psychro.Clin(173.15) atol=0.0001e-9
 @test -2.0928e-12 ≈ Psychro.Clin(273.15) atol=0.0001e-12
 @test -5.7548e-14 ≈ Psychro.Clin(373.15) atol=0.0001e-14
 @test -6.3933e-15 ≈ Psychro.Clin(473.15) atol=0.0001e-15
+end
 
-# Specific enthalpy of saturated water vapor
+@testset "Specific enthalpy of saturated water vapor" begin
 # First table of the appendix of ref. [1]
 @test 2315.87 ≈ Psychro.enthalpyvapor(173.15)/1000 atol=0.01
 @test 2408.41 ≈ Psychro.enthalpyvapor(223.15)/1000 atol=0.01
@@ -109,8 +114,9 @@ P = 5.0e6
 @test 2675.46 ≈ Psychro.enthalpyvapor(373.15)/1000 atol=0.01
 @test 2746.15 ≈ Psychro.enthalpyvapor(423.15)/1000 atol=0.01
 @test 2793.11 ≈ Psychro.enthalpyvapor(473.15)/1000 atol=0.01
+end
 
-# Specific volume of saturated water vapor
+@testset "Specific volume of saturated water vapor" begin
 # First table of the appendix of ref. [1]
 @test 5.6873e7 ≈ Psychro.volumevapor(173.15) atol=0.0001e7
 @test 2.6146e4 ≈ Psychro.volumevapor(223.15) atol=0.0001e4
@@ -119,9 +125,9 @@ P = 5.0e6
 @test 1.6718e0 ≈ Psychro.volumevapor(373.15) atol=0.0001e0
 @test 3.9253e-1 ≈ Psychro.volumevapor(423.15) atol=0.0001e-1
 @test 1.2722e-1 ≈ Psychro.volumevapor(473.15) atol=0.0001e0
+end
 
-
-# Specific entropy of saturated water vapor
+@testset "Specific entropy of saturated water vapor" begin
 # First table of the appendix of ref. [1]
 @test 14.30387 ≈ Psychro.entropyvapor(173.15)/1000 atol=0.00005
 @test 11.10965 ≈ Psychro.entropyvapor(223.15)/1000 atol=0.00005
@@ -130,4 +136,5 @@ P = 5.0e6
 @test  7.35365 ≈ Psychro.entropyvapor(373.15)/1000 atol=0.00005
 @test  6.83731 ≈ Psychro.entropyvapor(423.15)/1000 atol=0.00005
 @test  6.43218 ≈ Psychro.entropyvapor(473.15)/1000 atol=0.00005
-
+end
+end

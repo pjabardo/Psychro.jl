@@ -187,8 +187,6 @@ This implements equation 18 from [1].
  * Output: Pa
 """
 function Pws_s(Tk)
-
-  
     exp( (mm[1] + Tk*(mm[2] + Tk*(mm[3] + Tk*(mm[4] + Tk*(mm[5] + Tk*mm[6])))))/Tk + mm[7] * log(Tk) )
 end
 
@@ -383,7 +381,7 @@ Molar entropy of saturated vapor. Eq. 20 reference [1].
 """
 function molarentropyvapor(Tk)
     p = Pws(Tk)
-    s1 = @polyeval(Tk, ww, 6) + ww[7]*log(Tk)
+    s1 = polyeval(Tk, ww, 6) + ww[7]*log(Tk)
     s2 = -R*log(p) - R*p * ( (Blin(Tk) + Tk*dBlin(Tk)) + p/2 * (Clin(Tk) + Tk*dClin(Tk)) )
 
     return s1*Mv + s2
