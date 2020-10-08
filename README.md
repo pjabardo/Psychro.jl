@@ -5,7 +5,12 @@ This package provides Julia with functions to compute some thermodynamic propert
 
 Besides moist air, this package also calculates the properties of dry air and saturated water vapor. It is part of a larger effort to model the thermodynamic (and transport) properties of different types of fluids.
 
+## instalation
 
+julia-repl```
+julia> ]
+(v1.4) pkg> add https://github.com/pjabardo/Psychro.jl/
+```
 
 ## User interface - Thermodynamic properties of moist air, dry air and saturated water vapor.
 
