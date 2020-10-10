@@ -80,8 +80,8 @@ end
 function cardan(poly::NTuple{4,T}) where {T<:AbstractFloat}
     # Cubic equation solver for complex polynomial (degree=3)
     # http://en.wikipedia.org/wiki/Cubic_function   Lagrange's method
-    third = 1//3
-    a1  =  T(1.0)
+    third = 0.3333333333333333 #speeds up the calculation
+    a1  =  T(1.0) #in the original cardan, there is a divition here (1/a[4]). in this particular case its not necessary
     E1  = -complex(poly[3])*a1
     E2  =  complex(poly[2])*a1
     E3  = -complex(poly[1])*a1
