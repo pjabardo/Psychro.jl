@@ -410,7 +410,7 @@ function molarfrac(Tk, ::Type{HumRat}, w, P)
 end
 
 function molarfrac(Tk, ::Type{SpecHum}, q, P)
-    q * Ma / (Mv + r*(Ma - Mv))
+    q * Ma / (Mv + q*(Ma - Mv))
 end
 
 function molarfrac(Tk, ::Type{RelHum}, rel, P)
