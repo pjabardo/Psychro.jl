@@ -1,6 +1,6 @@
 name = "Psychro"
-uuid = "004b34f0-5971-4be0-928f-8519ce193c55"
-authors = ["Paulo Jabardo", "IPT"]
+uuid = "9516f557-4a54-5a79-b954-c272e753c77a"
+authors = ["Paulo Jabardo"]
 version = "0.2.0"
 
 [deps]
