@@ -1,14 +1,14 @@
 name = "Psychro"
 uuid = "004b34f0-5971-4be0-928f-8519ce193c55"
 authors = ["Paulo Jabardo", "IPT"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 Unitful = "^1.4.1"
-julia = "1.4.1"
+julia = "^1.4"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
